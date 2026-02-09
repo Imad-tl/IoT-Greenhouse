@@ -44,7 +44,28 @@ services:
             interval: 10s
             timeout: 5s
             retries: 5
+
+    rabbitmq:
+        image: rabbitmq:3-management
+        container_name: rabbitmq
+        restart: unless-stopped
+        ports:
+          - "5672:5672"
+          - "15672:15672"
+          - "1883:1883"
+        environment:
+            RABBITMQ_DEFAULT_USER: ${RABBITMQ_USER:-root}
+            RABBITMQ_DEFAULT_PASS: ${RABBITMQ_PASSWORD:-root}
+        volumes:
+            - rabbitmq_data:/var/lib/rabbitmq
+        healthcheck:
+            test: ["CMD", "rabbitmq-diagnostics", "-q", "ping"]
+            retries: 3
+            timeout: 10s
+            interval: 30s
+            
 volumes:
     grafana-data:
     influxdb3-data:
     influxdb3-plugins:
+    rabbitmq_data:
