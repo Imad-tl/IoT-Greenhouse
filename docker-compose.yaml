@@ -69,3 +69,7 @@ volumes:
     influxdb3-data:
     influxdb3-plugins:
     rabbitmq_data:
+
+networks:
+    default:
+        driver: bridge
