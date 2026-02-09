@@ -1,0 +1,50 @@
+services:
+
+    grafana:
+        image: grafana/grafana:latest
+        container_name: grafana
+        ports:
+            - "3000:3000"
+        environment:
+            - GF_SECURITY_ADMIN_USER=${GRAFANA_USER:-root}
+            - GF_SECURITY_ADMIN_PASSWORD=${GRAFANA_PASSWORD:-root}
+            - GF_PLUGINS_PREINSTALL=grafana-clock-panel
+        volumes:
+            - grafana-data:/var/lib/grafana
+            - ./grafana/grafana.ini:/etc/grafana/grafana.ini
+            - ./grafana/provisioning:/etc/grafana/provisioning
+            - ./grafana/dashboards:/var/lib/grafana/dashboards
+        restart: unless-stopped
+        depends_on:
+            - influxdb3-core
+        healthcheck:
+            test: ["CMD", "curl", "-f", "http://localhost:3000/api/health"]
+            interval: 10s
+            timeout: 5s
+            retries: 5
+
+    influxdb3-core:
+        container_name: influxdb3-core
+        image: influxdb:3-core
+        user: root
+        ports:
+            - "8181:8181"
+        command:
+            - influxdb3
+            - serve
+            - --node-id=node0
+            - --object-store=file
+            - --data-dir=/var/lib/influxdb3/data
+            - --plugin-dir=/var/lib/influxdb3/plugins
+        volumes:
+            - influxdb3-data:/var/lib/influxdb3/data
+            - influxdb3-plugins:/var/lib/influxdb3/plugins
+        healthcheck:
+            test: ["CMD", "nc", "-z", "localhost", "8181"]
+            interval: 10s
+            timeout: 5s
+            retries: 5
+volumes:
+    grafana-data:
+    influxdb3-data:
+    influxdb3-plugins:
