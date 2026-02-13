@@ -1,5 +1,4 @@
-services:
-
+services:  
     grafana:
         image: grafana/grafana:latest
         container_name: grafana
@@ -41,9 +40,10 @@ services:
             - influxdb3-plugins:/var/lib/influxdb3/plugins
         healthcheck:
             test: ["CMD", "nc", "-z", "localhost", "8181"]
-            interval: 10s
-            timeout: 5s
-            retries: 5
+            interval: 15s
+            timeout: 10s
+            retries: 20
+            start_period: 60s
 
     rabbitmq:
         image: rabbitmq:3-management
@@ -63,7 +63,66 @@ services:
             retries: 3
             timeout: 10s
             interval: 30s
-            
+
+    cloud:
+        build:
+            context: ./cloud
+            dockerfile: Dockerfile
+        container_name: cloud
+        restart: unless-stopped
+        ports:
+            - "8000:8000"
+        environment:
+            - DJANGO_SECRET_KEY=${DJANGO_SECRET_KEY:-django-insecure-dev-key}
+            - DEBUG=${DEBUG:-False}
+            - ALLOWED_HOSTS=localhost,127.0.0.1,cloud,grafana
+            - RABBITMQ_HOST=rabbitmq
+            - RABBITMQ_PORT=5672
+            - RABBITMQ_USER=${RABBITMQ_USER:-root}
+            - RABBITMQ_PASSWORD=${RABBITMQ_PASSWORD:-root}
+            - INFLUXDB_URL=http://influxdb3-core:8181
+            - INFLUXDB_ORG=${INFLUXDB_ORG:-lorawan}
+            - INFLUXDB_BUCKET=${INFLUXDB_BUCKET:-lorawan_data}
+            - INFLUXDB_TOKEN=${INFLUXDB_TOKEN:-test-token}
+            - LORAWAN_WEBHOOK_SECRET=${LORAWAN_WEBHOOK_SECRET:-your-secret}
+            - API_KEY=${API_KEY:-your-api-key}
+            - CORS_ALLOWED_ORIGINS=http://localhost:3000,http://localhost:8000,http://grafana:3000
+        volumes:
+            - ./cloud:/app
+        depends_on:
+            - rabbitmq
+            - influxdb3-core
+        healthcheck:
+            test: ["CMD", "curl", "-f", "http://localhost:8000"]
+            interval: 10s
+            timeout: 5s
+            retries: 5
+            start_period: 15s
+
+    worker:
+        build:
+            context: ./cloud
+            dockerfile: Dockerfile
+        container_name: worker
+        restart: unless-stopped
+        command: python worker.py
+        environment:
+            - DJANGO_SECRET_KEY=${DJANGO_SECRET_KEY:-django-insecure-dev-key}
+            - DEBUG=${DEBUG:-False}
+            - RABBITMQ_HOST=rabbitmq
+            - RABBITMQ_PORT=5672
+            - RABBITMQ_USER=${RABBITMQ_USER:-root}
+            - RABBITMQ_PASSWORD=${RABBITMQ_PASSWORD:-root}
+            - INFLUXDB_URL=http://influxdb3-core:8181
+            - INFLUXDB_ORG=${INFLUXDB_ORG:-lorawan}
+            - INFLUXDB_BUCKET=${INFLUXDB_BUCKET:-lorawan_data}
+            - INFLUXDB_TOKEN=${INFLUXDB_TOKEN:-test-token}
+        volumes:
+            - ./cloud:/app
+        depends_on:
+            - rabbitmq
+            - influxdb3-core
+
 volumes:
     grafana-data:
     influxdb3-data:
