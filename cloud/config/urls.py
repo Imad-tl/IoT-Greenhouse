@@ -13,7 +13,7 @@ def hello_world(request):
     return JsonResponse({
         'message': 'Hello World !',
         'endpoints': {
-            'health': '/health',
+            'health': '/api/health',
             'chirpstack_webhook': '/api/webhooks/chirpstack/',
             'ttn_webhook': '/api/webhooks/ttn/'
         }
@@ -22,5 +22,5 @@ def hello_world(request):
 urlpatterns = [
     path('', hello_world, name='hello_world'),
     path('health', health_check, name='health_check'),
-    path('api/webhooks/', include('ingestion.urls')),
+    path('webhooks/', include('ingestion.urls')),
 ]
