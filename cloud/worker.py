@@ -4,6 +4,7 @@ import django
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'config.settings')
 django.setup()
 
+import time
 import pika
 import json
 from django.conf import settings
@@ -30,20 +31,37 @@ def process_message(ch, method, properties, body):
         print(f"✗ Error processing message: {e}")
         ch.basic_nack(delivery_tag=method.delivery_tag, requeue=True)
 
-def start_consumer():
-    """Start RabbitMQ consumer"""
+def create_connection():
+    """Create a RabbitMQ connection with exponential backoff retry"""
     credentials = pika.PlainCredentials(
         settings.RABBITMQ_USER,
         settings.RABBITMQ_PASSWORD
     )
-    connection = pika.BlockingConnection(
-        pika.ConnectionParameters(
-            host=settings.RABBITMQ_HOST,
-            port=settings.RABBITMQ_PORT,
-            virtual_host=settings.RABBITMQ_VHOST,
-            credentials=credentials
-        )
+    params = pika.ConnectionParameters(
+        host=settings.RABBITMQ_HOST,
+        port=settings.RABBITMQ_PORT,
+        virtual_host=settings.RABBITMQ_VHOST,
+        credentials=credentials,
+        connection_attempts=1,
     )
+    max_retries = 10
+    delay = 2
+    for attempt in range(1, max_retries + 1):
+        try:
+            print(f'Connecting to RabbitMQ (attempt {attempt}/{max_retries})...')
+            connection = pika.BlockingConnection(params)
+            print('✓ Connected to RabbitMQ')
+            return connection
+        except pika.exceptions.AMQPConnectionError as e:
+            if attempt == max_retries:
+                raise
+            print(f'✗ Connection failed: {e}. Retrying in {delay}s...')
+            time.sleep(delay)
+            delay = min(delay * 2, 30)
+
+def start_consumer():
+    """Start RabbitMQ consumer"""
+    connection = create_connection()
     channel = connection.channel()
     
     # Declare queue

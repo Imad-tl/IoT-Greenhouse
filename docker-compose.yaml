@@ -83,7 +83,7 @@ services:
         environment:
             - DJANGO_SECRET_KEY=${DJANGO_SECRET_KEY:-django-insecure-dev-key}
             - DEBUG=${DEBUG:-False}
-            - ALLOWED_HOSTS=localhost,127.0.0.1,cloud,nginx
+            - ALLOWED_HOSTS=localhost,127.0.0.1,cloud,nginx,*
             - RABBITMQ_HOST=rabbitmq
             - RABBITMQ_PORT=5672
             - RABBITMQ_USER=${RABBITMQ_USER:-root}
@@ -129,8 +129,10 @@ services:
         volumes:
             - ./cloud:/app
         depends_on:
-            - rabbitmq
-            - influxdb3-core
+            rabbitmq:
+                condition: service_healthy
+            influxdb3-core:
+                condition: service_healthy
 
 volumes:
     grafana-data:
