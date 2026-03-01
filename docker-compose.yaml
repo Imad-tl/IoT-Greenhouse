@@ -5,6 +5,7 @@ services:
         ports:
             - "80:80"
             - "443:443"
+            - "5671:5671"   # AMQP over TLS (proxy vers rabbitmq:5672)
         volumes:
             - ./host/nginx.conf:/etc/nginx/nginx.conf:ro
             - /etc/letsencrypt:/etc/letsencrypt:ro
@@ -12,6 +13,7 @@ services:
         depends_on:
             - api
             - grafana
+            - rabbitmq
         restart: unless-stopped
 
     grafana:
