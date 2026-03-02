@@ -11,10 +11,20 @@ def health_check(request):
 def welcome(request):
     return JsonResponse({
         'message': 'Welcome to the IOT Greenhouse API Gateway! 🌱',
-        'endpoints': {
-            'health': ["GET", "/api/health"],
-            'ttn_webhook': ["POST", "/api/webhook"]
-        }
+        'endpoints': [
+            {
+                "name": "health",
+                "method": "GET",
+                "path": "/api/health",
+                "description": "Check if the API is running"
+            },
+            {
+                "name": "webhook",
+                "method": "POST",
+                "path": "/api/webhook",
+                "description": "Receive data from The Things Network (TTN) via webhook"
+            }
+        ]
     })
 
 urlpatterns = [

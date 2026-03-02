@@ -11,7 +11,7 @@ def ttn_webhook(request):
     TTN webhook receiver
     
     Expected headers:
-    - Authorization: Bearer YOUR_API_KEY (optional)
+    - Authorization: Bearer <token> (optional, if you want to secure the endpoint)
     
     Expected payload:
     {
@@ -52,7 +52,6 @@ def ttn_webhook(request):
             'water_level': decoded.get('water_level'),
         }
         
-        # Publish to RabbitMQ
         rabbitmq = RabbitMQClient()
         rabbitmq.publish_message(message)
         rabbitmq.close()
