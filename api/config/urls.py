@@ -14,7 +14,6 @@ def hello_world(request):
         'message': 'Hello World !',
         'endpoints': {
             'health': '/api/health',
-            'chirpstack_webhook': '/api/webhooks/chirpstack/',
             'ttn_webhook': '/api/webhooks/ttn/'
         }
     })

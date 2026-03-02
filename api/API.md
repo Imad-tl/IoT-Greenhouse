@@ -217,37 +217,6 @@ GET /api/data/aggregation/?device_id=device_001&aggregation=mean&interval=1h&ran
 
 ## Webhooks Endpoints
 
-### Chirpstack Webhook
-
-```bash
-POST /api/webhooks/chirpstack/
-```
-
-**Expected payload from Chirpstack:**
-
-```json
-{
-  "deviceInfo": {
-    "devEui": "70B3D57ED0041234",
-    "deviceName": "sensor_01"
-  },
-  "rxInfo": {
-    "rssi": -80,
-    "snr": 10
-  },
-  "txInfo": {
-    "frequency": 868100000,
-    "dr": 5
-  },
-  "publishedAt": "2024-02-13T10:30:00Z",
-  "objectJSON": {
-    "temperature": 22.5,
-    "humidity": 60,
-    "pressure": 1013.25
-  }
-}
-```
-
 ### TTN Webhook
 
 ```bash

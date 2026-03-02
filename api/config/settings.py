@@ -81,5 +81,4 @@ INFLUXDB_BUCKET = os.getenv('INFLUXDB_BUCKET', 'lorawan_data')
 INFLUXDB_TOKEN = os.getenv('INFLUXDB_TOKEN', 'test-token')
 
 # Security
-LORAWAN_WEBHOOK_SECRET = os.getenv('LORAWAN_WEBHOOK_SECRET', 'your-secret-key-change-me')
 API_KEY = os.getenv('API_KEY', 'your-api-key-change-me')

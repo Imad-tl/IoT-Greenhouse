@@ -42,7 +42,7 @@ services:
         image: influxdb:3-core
         user: root
         ports:
-            - "8181:8181"
+            - "127.0.0.1:8181:8181"
         command:
             - influxdb3
             - serve
@@ -97,7 +97,6 @@ services:
             - INFLUXDB_ORG=${INFLUXDB_ORG:-lorawan}
             - INFLUXDB_BUCKET=${INFLUXDB_BUCKET:-lorawan_data}
             - INFLUXDB_TOKEN=${INFLUXDB_TOKEN:-test-token}
-            - LORAWAN_WEBHOOK_SECRET=${LORAWAN_WEBHOOK_SECRET:-your-secret}
             - API_KEY=${API_KEY:-your-api-key}
             - CORS_ALLOWED_ORIGINS=https://vps.rayanemerlin.com
         volumes:

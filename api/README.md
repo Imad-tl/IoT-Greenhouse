@@ -5,13 +5,12 @@
 ```
 ┌──────────────────────────────────┐
 │   LoRaWAN Network Server         │
-│   (Chirpstack, TTN, etc)         │
+│   (TTN)                          │
 └────────────┬─────────────────────┘
              │ HTTP Webhooks
              ▼
 ┌──────────────────────────────────┐
 │    Django Backend (Port 8000)    │
-│  ✓ Webhooks validation (HMAC)    │
 │  ✓ RabbitMQ publisher            │
 └────────────┬─────────────────────┘
              │
@@ -76,21 +75,6 @@ http://localhost:3000 (user: root, pwd: root)
 
 ## 📡 Configuration des Webhooks
 
-### Chirpstack
-
-**URL**: `http://your-backend:8000/api/webhooks/chirpstack/`
-
-Payload attendu:
-
-```json
-{
-  "deviceInfo": {"devEui": "70B3D57ED0041234"},
-  "rxInfo": {"rssi": -80, "snr": 10},
-  "publishedAt": "2024-02-13T10:30:00Z",
-  "objectJSON": {"temperature": 22.5, "humidity": 60}
-}
-```
-
 ### TTN
 
 **URL**: `http://your-backend:8000/api/webhooks/ttn/`
@@ -108,23 +92,11 @@ Payload attendu:
 }
 ```
 
-## 🔒 Sécurité
-
-### Validation HMAC-SHA256 (Chirpstack)
-
-Configurez `LORAWAN_WEBHOOK_SECRET` dans `.env`:
-
-```bash
-LORAWAN_WEBHOOK_SECRET=your-very-secret-key
-```
-
-Chirpstack calculera: `HMAC-SHA256(body, secret)` et l'enverra en header `X-Signature`
-
 ## 🔄 Flow des données
 
 1. Device LoRaWAN → Network Server
 2. Network Server → Webhook au Backend
-3. Backend valide signature → publie RabbitMQ
+3. Backend normalise payload TTN → publie RabbitMQ
 4. Worker consomme RabbitMQ → écrit InfluxDB
 5. Grafana lit InfluxDB → affiche données
 
@@ -147,7 +119,7 @@ docker-compose down
 ## ✨ Points clés
 
 ✅ **Pas de PostgreSQL** - InfluxDB seule source de vérité
-✅ **Sécurité HMAC** - Validation des webhooks
+✅ **Ingestion TTN dédiée** - Endpoint unique côté backend
 ✅ **Découplage** - RabbitMQ entre ingestion et stockage
 ✅ **Simple** - Juste webhooks, queue, et InfluxDB
 ✅ **Scalable** - Worker peut être multiplié
