@@ -1,5 +1,6 @@
-from django.urls import path, include
+from django.urls import path
 from django.http import JsonResponse
+from ingestion.views import ttn_webhook
 
 def health_check(request):
     """Health check endpoint"""
@@ -28,7 +29,9 @@ def welcome(request):
     })
 
 urlpatterns = [
-    path('', welcome, name='welcome'),
-    path('health', health_check, name='health_check'),
-    path('webhook/', include('ingestion.urls')),
+    path('api/', welcome, name='welcome'),
+    path('api/health', health_check, name='health_check'),
+    path('api/health/', health_check),
+    path('api/webhook', ttn_webhook, name='ttn_webhook'),
+    path('api/webhook/', ttn_webhook),
 ]

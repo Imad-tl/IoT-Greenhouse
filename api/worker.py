@@ -10,6 +10,16 @@ import json
 from django.conf import settings
 from ingestion.influxdb_client import InfluxDBClient
 
+# Single shared InfluxDB client (avoid opening a new connection per message)
+_influx_client = None
+
+def get_influx_client():
+    global _influx_client
+    if _influx_client is None:
+        _influx_client = InfluxDBClient()
+        print('✓ InfluxDB client initialized')
+    return _influx_client
+
 def process_message(ch, method, properties, body):
     """Process message from RabbitMQ and write to InfluxDB"""
     try:
@@ -21,9 +31,8 @@ def process_message(ch, method, properties, body):
             ch.basic_ack(delivery_tag=method.delivery_tag)
             return
         
-        # Write to InfluxDB
-        influx_client = InfluxDBClient()
-        influx_client.write_sensor_data(dev_eui, data)
+        # Write to InfluxDB (reuse shared client)
+        get_influx_client().write_sensor_data(dev_eui, data)
         
         ch.basic_ack(delivery_tag=method.delivery_tag)
         print(f"✓ Data written to InfluxDB for device {dev_eui}")

@@ -20,7 +20,7 @@ class InfluxDBClient:
             token=settings.INFLUXDB_TOKEN,
             org=settings.INFLUXDB_ORG
         )
-        self.write_api = self.client.write_api(write_type=SYNCHRONOUS)
+        self.write_api = self.client.write_api(write_options=SYNCHRONOUS)
         self.query_api = self.client.query_api()
 
     def write_sensor_data(self, dev_eui, data):

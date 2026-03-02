@@ -3,12 +3,20 @@
     "list": [
       {
         "builtIn": 1,
-        "datasource": { "type": "grafana", "uid": "-- Grafana --" },
+        "datasource": {
+          "type": "grafana",
+          "uid": "-- Grafana --"
+        },
         "enable": true,
         "hide": true,
         "iconColor": "rgba(0, 211, 255, 1)",
         "name": "Annotations & Alerts",
-        "target": { "limit": 100, "matchAny": false, "tags": [], "type": "dashboard" },
+        "target": {
+          "limit": 100,
+          "matchAny": false,
+          "tags": [],
+          "type": "dashboard"
+        },
         "type": "dashboard"
       }
     ]
@@ -21,63 +29,130 @@
   "liveNow": false,
   "panels": [
     {
-      "datasource": { "type": "influxdb", "uid": "influxdb_uid" },
+      "datasource": {
+        "type": "influxdb",
+        "uid": "influxdb_uid"
+      },
       "fieldConfig": {
         "defaults": {
-          "color": { "mode": "palette-classic" },
+          "color": {
+            "mode": "palette-classic"
+          },
           "custom": {
-            "axisLabel": "°C", "axisPlacement": "auto", "drawStyle": "line",
-            "fillOpacity": 10, "gradientMode": "opacity", "lineInterpolation": "smooth",
-            "lineWidth": 2, "pointSize": 4, "showPoints": "auto", "spanNulls": false,
-            "thresholdsStyle": { "mode": "line+area" }
+            "axisLabel": "\u00b0C",
+            "axisPlacement": "auto",
+            "drawStyle": "line",
+            "fillOpacity": 10,
+            "gradientMode": "opacity",
+            "lineInterpolation": "smooth",
+            "lineWidth": 2,
+            "pointSize": 4,
+            "showPoints": "auto",
+            "spanNulls": false,
+            "thresholdsStyle": {
+              "mode": "line+area"
+            }
           },
           "mappings": [],
           "thresholds": {
             "mode": "absolute",
             "steps": [
-              { "color": "green",  "value": null },
-              { "color": "orange", "value": 30 },
-              { "color": "red",    "value": 40 }
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "orange",
+                "value": 30
+              },
+              {
+                "color": "red",
+                "value": 40
+              }
             ]
           },
           "unit": "celsius"
         },
         "overrides": []
       },
-      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 0 },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 0
+      },
       "id": 1,
       "options": {
-        "legend": { "calcs": ["last", "min", "max"], "displayMode": "table", "placement": "bottom" },
-        "tooltip": { "mode": "multi", "sort": "desc" }
+        "legend": {
+          "calcs": [
+            "last",
+            "min",
+            "max"
+          ],
+          "displayMode": "table",
+          "placement": "bottom"
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
       },
       "targets": [
         {
-          "datasource": { "type": "influxdb", "uid": "influxdb_uid" },
-          "query": "from(bucket: \"lorawan_data\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r[\"_measurement\"] == \"greenhouse_data\")\n  |> filter(fn: (r) => r[\"_field\"] == \"temp\")\n  |> aggregateWindow(every: v.windowPeriod, fn: mean, createEmpty: false)\n  |> yield(name: \"mean\")",
-          "refId": "A"
+          "datasource": {
+            "type": "influxdata-flightsql-datasource",
+            "uid": "influxdb_uid"
+          },
+          "refId": "A",
+          "format": "table",
+          "queryText": "SELECT time, dev_eui, temp FROM greenhouse_data WHERE time >= $__timeFrom() AND time <= $__timeTo() AND temp IS NOT NULL ORDER BY time",
+          "rawEditor": true
         }
       ],
-      "title": "Température",
+      "title": "Temp\u00e9rature",
       "type": "timeseries"
     },
     {
-      "datasource": { "type": "influxdb", "uid": "influxdb_uid" },
+      "datasource": {
+        "type": "influxdb",
+        "uid": "influxdb_uid"
+      },
       "fieldConfig": {
         "defaults": {
-          "color": { "mode": "palette-classic" },
+          "color": {
+            "mode": "palette-classic"
+          },
           "custom": {
-            "axisLabel": "%", "axisPlacement": "auto", "drawStyle": "line",
-            "fillOpacity": 10, "gradientMode": "opacity", "lineInterpolation": "smooth",
-            "lineWidth": 2, "pointSize": 4, "showPoints": "auto", "spanNulls": false,
-            "thresholdsStyle": { "mode": "line+area" }
+            "axisLabel": "%",
+            "axisPlacement": "auto",
+            "drawStyle": "line",
+            "fillOpacity": 10,
+            "gradientMode": "opacity",
+            "lineInterpolation": "smooth",
+            "lineWidth": 2,
+            "pointSize": 4,
+            "showPoints": "auto",
+            "spanNulls": false,
+            "thresholdsStyle": {
+              "mode": "line+area"
+            }
           },
           "mappings": [],
           "thresholds": {
             "mode": "absolute",
             "steps": [
-              { "color": "green",  "value": null },
-              { "color": "orange", "value": 80 },
-              { "color": "red",    "value": 90 }
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "orange",
+                "value": 80
+              },
+              {
+                "color": "red",
+                "value": 90
+              }
             ]
           },
           "unit": "percent",
@@ -86,34 +161,69 @@
         },
         "overrides": []
       },
-      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 0 },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 12,
+        "y": 0
+      },
       "id": 2,
       "options": {
-        "legend": { "calcs": ["last", "min", "max"], "displayMode": "table", "placement": "bottom" },
-        "tooltip": { "mode": "multi", "sort": "desc" }
+        "legend": {
+          "calcs": [
+            "last",
+            "min",
+            "max"
+          ],
+          "displayMode": "table",
+          "placement": "bottom"
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
       },
       "targets": [
         {
-          "datasource": { "type": "influxdb", "uid": "influxdb_uid" },
-          "query": "from(bucket: \"lorawan_data\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r[\"_measurement\"] == \"greenhouse_data\")\n  |> filter(fn: (r) => r[\"_field\"] == \"hum\")\n  |> aggregateWindow(every: v.windowPeriod, fn: mean, createEmpty: false)\n  |> yield(name: \"mean\")",
-          "refId": "A"
+          "datasource": {
+            "type": "influxdata-flightsql-datasource",
+            "uid": "influxdb_uid"
+          },
+          "refId": "A",
+          "format": "table",
+          "queryText": "SELECT time, dev_eui, hum FROM greenhouse_data WHERE time >= $__timeFrom() AND time <= $__timeTo() AND hum IS NOT NULL ORDER BY time",
+          "rawEditor": true
         }
       ],
-      "title": "Humidité",
+      "title": "Humidit\u00e9",
       "type": "timeseries"
     },
     {
-      "datasource": { "type": "influxdb", "uid": "influxdb_uid" },
+      "datasource": {
+        "type": "influxdb",
+        "uid": "influxdb_uid"
+      },
       "fieldConfig": {
         "defaults": {
-          "color": { "mode": "thresholds" },
+          "color": {
+            "mode": "thresholds"
+          },
           "mappings": [],
           "thresholds": {
             "mode": "absolute",
             "steps": [
-              { "color": "red",    "value": null },
-              { "color": "orange", "value": 20 },
-              { "color": "green",  "value": 40 }
+              {
+                "color": "red",
+                "value": null
+              },
+              {
+                "color": "orange",
+                "value": 20
+              },
+              {
+                "color": "green",
+                "value": 40
+              }
             ]
           },
           "unit": "short",
@@ -122,108 +232,219 @@
         },
         "overrides": []
       },
-      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 8 },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 8
+      },
       "id": 3,
       "options": {
         "orientation": "auto",
-        "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false },
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
         "showThresholdLabels": false,
         "showThresholdMarkers": true,
         "text": {}
       },
       "targets": [
         {
-          "datasource": { "type": "influxdb", "uid": "influxdb_uid" },
-          "query": "from(bucket: \"lorawan_data\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r[\"_measurement\"] == \"greenhouse_data\")\n  |> filter(fn: (r) => r[\"_field\"] == \"water_level\")\n  |> aggregateWindow(every: v.windowPeriod, fn: last, createEmpty: false)\n  |> yield(name: \"last\")",
-          "refId": "A"
+          "datasource": {
+            "type": "influxdata-flightsql-datasource",
+            "uid": "influxdb_uid"
+          },
+          "refId": "A",
+          "format": "table",
+          "queryText": "SELECT time, dev_eui, water_level FROM greenhouse_data WHERE time >= $__timeFrom() AND time <= $__timeTo() AND water_level IS NOT NULL ORDER BY time",
+          "rawEditor": true
         }
       ],
       "title": "Niveau d'eau",
       "type": "gauge"
     },
     {
-      "datasource": { "type": "influxdb", "uid": "influxdb_uid" },
+      "datasource": {
+        "type": "influxdb",
+        "uid": "influxdb_uid"
+      },
       "fieldConfig": {
         "defaults": {
-          "color": { "mode": "thresholds" },
+          "color": {
+            "mode": "thresholds"
+          },
           "mappings": [
-            { "options": { "0": { "color": "green", "index": 0, "text": "Normal" } }, "type": "value" },
-            { "options": { "from": 1, "result": { "color": "red", "index": 1, "text": "ALERTE" }, "to": 10000 }, "type": "range" }
+            {
+              "options": {
+                "0": {
+                  "color": "green",
+                  "index": 0,
+                  "text": "Normal"
+                }
+              },
+              "type": "value"
+            },
+            {
+              "options": {
+                "from": 1,
+                "result": {
+                  "color": "red",
+                  "index": 1,
+                  "text": "ALERTE"
+                },
+                "to": 10000
+              },
+              "type": "range"
+            }
           ],
           "thresholds": {
             "mode": "absolute",
             "steps": [
-              { "color": "green", "value": null },
-              { "color": "red",   "value": 1 }
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 1
+              }
             ]
           },
           "unit": "short"
         },
         "overrides": []
       },
-      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 8 },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 12,
+        "y": 8
+      },
       "id": 4,
       "options": {
         "colorMode": "background",
         "graphMode": "none",
         "justifyMode": "center",
         "orientation": "auto",
-        "reduceOptions": { "calcs": ["sum"], "fields": "", "values": false },
-        "text": { "titleSize": 18, "valueSize": 48 },
+        "reduceOptions": {
+          "calcs": [
+            "sum"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "text": {
+          "titleSize": 18,
+          "valueSize": 48
+        },
         "textMode": "auto"
       },
       "targets": [
         {
-          "datasource": { "type": "influxdb", "uid": "influxdb_uid" },
-          "query": "from(bucket: \"lorawan_data\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r[\"_measurement\"] == \"greenhouse_data\")\n  |> filter(fn: (r) => r[\"priority\"] == \"Alert\")\n  |> filter(fn: (r) => r[\"_field\"] == \"temp\")\n  |> count()\n  |> yield(name: \"alert_count\")",
-          "refId": "A"
+          "datasource": {
+            "type": "influxdata-flightsql-datasource",
+            "uid": "influxdb_uid"
+          },
+          "refId": "A",
+          "format": "table",
+          "queryText": "SELECT COUNT(*) as alert_count FROM greenhouse_data WHERE time >= $__timeFrom() AND time <= $__timeTo() AND priority = 'Alert'",
+          "rawEditor": true
         }
       ],
-      "title": "Alertes (période sélectionnée)",
+      "title": "Alertes (p\u00e9riode s\u00e9lectionn\u00e9e)",
       "type": "stat"
     },
     {
-      "datasource": { "type": "influxdb", "uid": "influxdb_uid" },
+      "datasource": {
+        "type": "influxdb",
+        "uid": "influxdb_uid"
+      },
       "fieldConfig": {
         "defaults": {
-          "color": { "mode": "palette-classic" },
+          "color": {
+            "mode": "palette-classic"
+          },
           "custom": {
-            "axisLabel": "seq", "axisPlacement": "auto", "drawStyle": "points",
-            "fillOpacity": 0, "lineWidth": 1, "pointSize": 5,
-            "showPoints": "always", "spanNulls": false,
-            "thresholdsStyle": { "mode": "off" }
+            "axisLabel": "seq",
+            "axisPlacement": "auto",
+            "drawStyle": "points",
+            "fillOpacity": 0,
+            "lineWidth": 1,
+            "pointSize": 5,
+            "showPoints": "always",
+            "spanNulls": false,
+            "thresholdsStyle": {
+              "mode": "off"
+            }
           },
           "mappings": [],
-          "thresholds": { "mode": "absolute", "steps": [{ "color": "green", "value": null }] },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              }
+            ]
+          },
           "unit": "short"
         },
         "overrides": []
       },
-      "gridPos": { "h": 5, "w": 24, "x": 0, "y": 16 },
+      "gridPos": {
+        "h": 5,
+        "w": 24,
+        "x": 0,
+        "y": 16
+      },
       "id": 5,
       "options": {
-        "legend": { "calcs": ["last"], "displayMode": "list", "placement": "right" },
-        "tooltip": { "mode": "multi", "sort": "none" }
+        "legend": {
+          "calcs": [
+            "last"
+          ],
+          "displayMode": "list",
+          "placement": "right"
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "none"
+        }
       },
       "targets": [
         {
-          "datasource": { "type": "influxdb", "uid": "influxdb_uid" },
-          "query": "from(bucket: \"lorawan_data\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r[\"_measurement\"] == \"greenhouse_data\")\n  |> filter(fn: (r) => r[\"_field\"] == \"seq\")\n  |> yield(name: \"seq\")",
-          "refId": "A"
+          "datasource": {
+            "type": "influxdata-flightsql-datasource",
+            "uid": "influxdb_uid"
+          },
+          "refId": "A",
+          "format": "table",
+          "queryText": "SELECT time, dev_eui, seq FROM greenhouse_data WHERE time >= $__timeFrom() AND time <= $__timeTo() AND seq IS NOT NULL ORDER BY time",
+          "rawEditor": true
         }
       ],
-      "title": "Séquence (cpt)",
+      "title": "S\u00e9quence (cpt)",
       "type": "timeseries"
     }
   ],
   "schemaVersion": 37,
   "style": "dark",
-  "tags": ["iot", "greenhouse"],
+  "tags": [
+    "iot",
+    "greenhouse"
+  ],
   "templating": {
     "list": [
       {
         "current": {},
-        "datasource": { "type": "influxdb", "uid": "influxdb_uid" },
+        "datasource": {
+          "type": "influxdb",
+          "uid": "influxdb_uid"
+        },
         "definition": "import \"influxdata/influxdb/schema\"\nschema.tagValues(\n  bucket: \"lorawan_data\",\n  tag: \"dev_eui\",\n  predicate: (r) => r[\"_measurement\"] == \"greenhouse_data\"\n)",
         "hide": 0,
         "includeAll": true,
@@ -239,7 +460,10 @@
       }
     ]
   },
-  "time": { "from": "now-6h", "to": "now" },
+  "time": {
+    "from": "now-6h",
+    "to": "now"
+  },
   "timepicker": {},
   "timezone": "browser",
   "title": "IoT Greenhouse Dashboard",

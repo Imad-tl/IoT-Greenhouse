@@ -23,6 +23,7 @@ def ttn_webhook(request):
     }
     """
     try:
+        print(f"Received webhook: {request.data}")
         data = request.data
         dev_eui = data.get('end_device_ids', {}).get('dev_eui')
         
