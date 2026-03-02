@@ -4,6 +4,8 @@ from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 from ingestion.rabbitmq_client import RabbitMQClient
 
+rabbitmq = RabbitMQClient()
+
 @api_view(['POST'])
 @permission_classes([AllowAny])
 def ttn_webhook(request):
@@ -53,9 +55,14 @@ def ttn_webhook(request):
             'water_level': decoded.get('water_level'),
         }
         
-        rabbitmq = RabbitMQClient()
-        rabbitmq.publish_message(message)
-        rabbitmq.close()
+        # Publish to RabbitMQ
+        try:
+            rabbitmq.publish_message(message)
+        except Exception as e:
+            return Response(
+                {'error': 'Failed to process data'},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
         
         return Response({'status': 'received'}, status=status.HTTP_200_OK)
     
