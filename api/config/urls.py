@@ -8,18 +8,17 @@ def health_check(request):
         'message': 'LoRaWAN Cloud Backend is running ✓'
     })
 
-def hello_world(request):
-    """Hello World endpoint"""
+def welcome(request):
     return JsonResponse({
-        'message': 'Hello World !',
+        'message': 'Welcome to the IOT Greenhouse API Gateway! 🌱',
         'endpoints': {
-            'health': '/api/health',
-            'ttn_webhook': '/api/webhooks/ttn/'
+            'health': ["GET", "/api/health"],
+            'ttn_webhook': ["POST", "/api/webhook"]
         }
     })
 
 urlpatterns = [
-    path('', hello_world, name='hello_world'),
+    path('', welcome, name='welcome'),
     path('health', health_check, name='health_check'),
-    path('webhooks/', include('ingestion.urls')),
+    path('webhook/', include('ingestion.urls')),
 ]

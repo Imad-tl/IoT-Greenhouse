@@ -220,7 +220,7 @@ GET /api/data/aggregation/?device_id=device_001&aggregation=mean&interval=1h&ran
 ### TTN Webhook
 
 ```bash
-POST /api/webhooks/ttn/
+POST /api/webhook
 ```
 
 **Expected payload from TTN:**
