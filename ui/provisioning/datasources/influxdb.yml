@@ -1,0 +1,16 @@
+apiVersion: 1
+
+datasources:
+  - name: InfluxDB
+    uid: influxdb_uid
+    type: influxdata-flightsql-datasource
+    access: proxy
+    url: influxdb3-core:8181
+    isDefault: true
+    editable: true
+    jsonData:
+      host: influxdb3-core:8181
+      authType: none
+      tlsEnabled: false
+      metadata:
+        - database: lorawan_data
