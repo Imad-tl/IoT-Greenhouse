@@ -7,7 +7,7 @@ services:
             - "443:443"
             - "5671:5671"
         environment:
-            - DOMAIN=${DOMAIN:-localhost}
+            - DOMAIN=${DOMAIN}
         command: >
             /bin/sh -c
             "envsubst '$$DOMAIN' < /etc/nginx/nginx.conf.template > /etc/nginx/nginx.conf
