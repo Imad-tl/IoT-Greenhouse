@@ -15,13 +15,13 @@ class RabbitMQClient:
             settings.RABBITMQ_USER,
             settings.RABBITMQ_PASSWORD
         )
-        self.connection = pika.(
+        self.connection = pika.BlockingConnection(
             pika.ConnectionParameters(
                 host=settings.RABBITMQ_HOST,
                 port=settings.RABBITMQ_PORT,
                 virtual_host=settings.RABBITMQ_VHOST,
                 credentials=credentials
-            )BlockingConnection
+            )
         )
         self.channel = self.connection.channel()
         self.channel.queue_declare(queue='lorawan_data', durable=True)
