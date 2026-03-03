@@ -1,7 +1,7 @@
 # Environment variables
-!.env.template
 .env
 .env.*
+!.env.template
 
 
 # Python
