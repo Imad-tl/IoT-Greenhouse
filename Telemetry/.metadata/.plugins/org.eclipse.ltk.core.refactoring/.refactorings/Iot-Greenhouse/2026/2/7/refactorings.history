@@ -1,0 +1,4 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<session version="1.0">
+<refactoring comment="Rename resource &apos;Iot-Greenhouse/idf_coponent.yml&apos; to &apos;idf_component.yml&apos;" description="Rename resource &apos;idf_coponent.yml&apos;" flags="7" id="org.eclipse.ltk.core.refactoring.rename.resource" input="idf_coponent.yml" name="idf_component.yml" stamp="1770644747613" updateReferences="true"/>
+</session>

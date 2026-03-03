@@ -1,0 +1,69 @@
+#include <stdio.h>
+#include "freertos/FreeRTOS.h"
+#include "freertos/task.h"
+#include "esp_log.h"
+
+#include "onewire_bus.h"
+#include "ds18b20.h"
+
+#define ONEWIRE_GPIO GPIO_NUM_4   // pin DATA du DS18B20
+#define SAMPLE_MS    2000         // période d'affichage
+
+static const char *TAG = "TEMP";
+
+void app_main(void)
+{
+    // 1-Wire bus
+    onewire_bus_handle_t bus = NULL;
+    onewire_bus_config_t bus_config = {
+        .bus_gpio_num = ONEWIRE_GPIO,
+    };
+    ESP_ERROR_CHECK(onewire_new_bus(&bus_config, &bus));
+
+    // Scan capteurs sur le bus
+    onewire_device_iter_handle_t iter = NULL;
+    ESP_ERROR_CHECK(onewire_new_device_iter(bus, &iter));
+
+    onewire_device_t dev;
+    bool found = false;
+
+    while (onewire_device_iter_get_next(iter, &dev) == ESP_OK) {
+        // On prend le premier device trouvé
+        ds18b20_device_handle_t sensor = NULL;
+        ESP_ERROR_CHECK(ds18b20_new_device(&dev, &sensor));
+
+        // Optionnel : résolution 12 bits (plus précis, conversion plus longue)
+        ESP_ERROR_CHECK(ds18b20_set_resolution(sensor, DS18B20_RESOLUTION_12B));
+
+        found = true;
+        ESP_LOGI(TAG, "DS18B20 détecté sur GPIO%d", (int)ONEWIRE_GPIO);
+
+        while (1) {
+            float temp_c = 0.0f;
+
+            esp_err_t err = ds18b20_trigger_temperature_conversion(sensor);
+            if (err != ESP_OK) {
+                ESP_LOGE(TAG, "Conversion failed: %s", esp_err_to_name(err));
+                vTaskDelay(pdMS_TO_TICKS(SAMPLE_MS));
+                continue;
+            }
+
+            // Attendre fin de conversion (12 bits ~750ms max)
+            vTaskDelay(pdMS_TO_TICKS(800));
+
+            err = ds18b20_get_temperature(sensor, &temp_c);
+            if (err == ESP_OK) {
+                // Affichage “propre”
+                ESP_LOGI(TAG, "Température: %.2f °C", temp_c);
+            } else {
+                ESP_LOGE(TAG, "Read failed: %s", esp_err_to_name(err));
+            }
+
+            vTaskDelay(pdMS_TO_TICKS(SAMPLE_MS));
+        }
+    }
+
+    if (!found) {
+        ESP_LOGE(TAG, "Aucun capteur 1-Wire détecté. Vérifie le câblage + résistance 4.7k pull-up.");
+    }
+}

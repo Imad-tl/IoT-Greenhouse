@@ -1,0 +1,50 @@
+#include <stdio.h>
+#include "freertos/FreeRTOS.h"
+#include "freertos/task.h"
+#include "esp_log.h"
+#include "esp_err.h"
+#include "esp_adc/adc_oneshot.h"
+
+static const char *TAG = "KY028_AO_TEMP";
+
+// Mets ici un GPIO ADC valide de ton ESP32-C6 (pas forcément GPIO4)
+#define AO_GPIO  4
+
+void app_main(void)
+{
+    adc_oneshot_unit_handle_t adc;
+    adc_oneshot_unit_init_cfg_t init_cfg = {
+        .unit_id = ADC_UNIT_1,
+        .ulp_mode = ADC_ULP_MODE_DISABLE,
+    };
+    ESP_ERROR_CHECK(adc_oneshot_new_unit(&init_cfg, &adc));
+
+    adc_unit_t unit;
+    adc_channel_t ch;
+    ESP_ERROR_CHECK(adc_oneshot_io_to_channel(AO_GPIO, &unit, &ch));
+
+    adc_oneshot_chan_cfg_t chan_cfg = {
+        .atten = ADC_ATTEN_DB_12,
+        .bitwidth = ADC_BITWIDTH_DEFAULT,
+    };
+    ESP_ERROR_CHECK(adc_oneshot_config_channel(adc, ch, &chan_cfg));
+
+    ESP_LOGI(TAG, "Lecture KY-028 AO sur GPIO%d (ADC unit=%d ch=%d)", AO_GPIO, unit, ch);
+
+    int prev = -1;
+
+    while (1) {
+        int raw = 0;
+        ESP_ERROR_CHECK(adc_oneshot_read(adc, ch, &raw));
+
+        const char *trend = "stable";
+        if (prev >= 0) {
+            if (raw > prev + 10) trend = "plus chaud (raw monte)";
+            else if (raw < prev - 10) trend = "plus froid (raw baisse)";
+        }
+        prev = raw;
+
+        printf("AO raw=%d -> %s\n", raw, trend);
+        vTaskDelay(pdMS_TO_TICKS(500));
+    }
+}

@@ -1,0 +1,13 @@
+# Target labels
+ bootloader
+# Source files and their labels
+/home/arcos/Desktop/CPE_TP_TD/IotGreenHouse/Iot-Greenhouse/build/CMakeFiles/bootloader
+/home/arcos/Desktop/CPE_TP_TD/IotGreenHouse/Iot-Greenhouse/build/CMakeFiles/bootloader.rule
+/home/arcos/Desktop/CPE_TP_TD/IotGreenHouse/Iot-Greenhouse/build/CMakeFiles/bootloader-complete.rule
+/home/arcos/Desktop/CPE_TP_TD/IotGreenHouse/Iot-Greenhouse/build/bootloader-prefix/src/bootloader-stamp/bootloader-build.rule
+/home/arcos/Desktop/CPE_TP_TD/IotGreenHouse/Iot-Greenhouse/build/bootloader-prefix/src/bootloader-stamp/bootloader-configure.rule
+/home/arcos/Desktop/CPE_TP_TD/IotGreenHouse/Iot-Greenhouse/build/bootloader-prefix/src/bootloader-stamp/bootloader-download.rule
+/home/arcos/Desktop/CPE_TP_TD/IotGreenHouse/Iot-Greenhouse/build/bootloader-prefix/src/bootloader-stamp/bootloader-install.rule
+/home/arcos/Desktop/CPE_TP_TD/IotGreenHouse/Iot-Greenhouse/build/bootloader-prefix/src/bootloader-stamp/bootloader-mkdir.rule
+/home/arcos/Desktop/CPE_TP_TD/IotGreenHouse/Iot-Greenhouse/build/bootloader-prefix/src/bootloader-stamp/bootloader-patch.rule
+/home/arcos/Desktop/CPE_TP_TD/IotGreenHouse/Iot-Greenhouse/build/bootloader-prefix/src/bootloader-stamp/bootloader-update.rule

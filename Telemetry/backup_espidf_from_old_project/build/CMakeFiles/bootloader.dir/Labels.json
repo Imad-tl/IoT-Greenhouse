@@ -1,0 +1,43 @@
+{
+	"sources" : 
+	[
+		{
+			"file" : "/home/arcos/Desktop/CPE_TP_TD/IotGreenHouse/Iot-Greenhouse/build/CMakeFiles/bootloader"
+		},
+		{
+			"file" : "/home/arcos/Desktop/CPE_TP_TD/IotGreenHouse/Iot-Greenhouse/build/CMakeFiles/bootloader.rule"
+		},
+		{
+			"file" : "/home/arcos/Desktop/CPE_TP_TD/IotGreenHouse/Iot-Greenhouse/build/CMakeFiles/bootloader-complete.rule"
+		},
+		{
+			"file" : "/home/arcos/Desktop/CPE_TP_TD/IotGreenHouse/Iot-Greenhouse/build/bootloader-prefix/src/bootloader-stamp/bootloader-build.rule"
+		},
+		{
+			"file" : "/home/arcos/Desktop/CPE_TP_TD/IotGreenHouse/Iot-Greenhouse/build/bootloader-prefix/src/bootloader-stamp/bootloader-configure.rule"
+		},
+		{
+			"file" : "/home/arcos/Desktop/CPE_TP_TD/IotGreenHouse/Iot-Greenhouse/build/bootloader-prefix/src/bootloader-stamp/bootloader-download.rule"
+		},
+		{
+			"file" : "/home/arcos/Desktop/CPE_TP_TD/IotGreenHouse/Iot-Greenhouse/build/bootloader-prefix/src/bootloader-stamp/bootloader-install.rule"
+		},
+		{
+			"file" : "/home/arcos/Desktop/CPE_TP_TD/IotGreenHouse/Iot-Greenhouse/build/bootloader-prefix/src/bootloader-stamp/bootloader-mkdir.rule"
+		},
+		{
+			"file" : "/home/arcos/Desktop/CPE_TP_TD/IotGreenHouse/Iot-Greenhouse/build/bootloader-prefix/src/bootloader-stamp/bootloader-patch.rule"
+		},
+		{
+			"file" : "/home/arcos/Desktop/CPE_TP_TD/IotGreenHouse/Iot-Greenhouse/build/bootloader-prefix/src/bootloader-stamp/bootloader-update.rule"
+		}
+	],
+	"target" : 
+	{
+		"labels" : 
+		[
+			"bootloader"
+		],
+		"name" : "bootloader"
+	}
+}
