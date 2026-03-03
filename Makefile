@@ -1,20 +1,26 @@
-.PHONY: start stop restart cert daemon
+.PHONY: start stop restart cert daemon seed
+
+SCRIPT_DIR := ./script
+
+START_SCRIPT := $(SCRIPT_DIR)/start.sh
+CERT_SCRIPT := $(SCRIPT_DIR)/cert.sh
+SEED_SCRIPT := $(SCRIPT_DIR)/seed.sh
 
 start:
-	./script/start.sh
+	$(START_SCRIPT)
 
 daemon:
-	./script/start.sh --daemon
+	$(START_SCRIPT) --daemon
 
 stop:
 	docker compose down
 
-restart:
-	docker compose down
-	./script/start.sh
+restart: 
+	stop
+	$(START_SCRIPT)
 
 cert:
-	./script/cert.sh
+	$(CERT_SCRIPT)
 
 seed:
-	./script/seed.sh
+	$(SEED_SCRIPT)
