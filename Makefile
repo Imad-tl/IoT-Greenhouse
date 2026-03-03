@@ -15,3 +15,6 @@ restart:
 
 cert:
 	./script/cert.sh
+
+seed:
+	./script/seed.sh

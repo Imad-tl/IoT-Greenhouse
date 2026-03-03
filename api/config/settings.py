@@ -62,7 +62,10 @@ REST_FRAMEWORK = {
 }
 
 # CORS
-CORS_ALLOWED_ORIGINS = os.getenv('CORS_ALLOWED_ORIGINS', 'http://localhost:3000,http://localhost:8000').split(',')
+CORS_ALLOWED_ORIGINS = os.getenv(
+    'CORS_ALLOWED_ORIGINS', 
+    'http://localhost:3000,http://localhost:8000'
+).split(',')
 
 # RabbitMQ
 RABBITMQ_HOST = os.getenv('RABBITMQ_HOST', 'rabbitmq')
@@ -78,4 +81,4 @@ INFLUXDB_BUCKET = os.getenv('INFLUXDB_BUCKET', 'lorawan_data')
 INFLUXDB_TOKEN = os.getenv('INFLUXDB_TOKEN', 'test-token')
 
 # Security
-API_KEY = os.getenv('API_KEY', 'your-api-key-change-me')
+API_KEY = os.getenv('API_KEY', 'test-api-key')
