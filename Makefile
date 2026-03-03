@@ -1,10 +1,10 @@
-.PHONY: start stop restart gen-cert
+.PHONY: start stop restart cert
 
 start:
 	./script/start.sh
 
 stop:
-	docker compose down -v
+	docker compose down
 
 restart:
 	docker compose down
