@@ -50,6 +50,15 @@ if ! docker compose version &> /dev/null; then
     sudo apt install -y docker-compose-plugin
 fi
 
+# Parse daemon flag
+DAEMON=""
+for arg in "$@"; do
+    if [ "$arg" = "--daemon" ] || [ "$arg" = "-d" ]; then
+        DAEMON="-d"
+        break
+    fi
+done
+
 # Launch services
 echo "Starting services..."
-docker compose up --build
+docker compose up --build $DAEMON
