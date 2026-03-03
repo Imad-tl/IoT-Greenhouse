@@ -1,0 +1,2 @@
+source /home/arcos/Desktop/CPE_TP_TD/IotGreenHouse/Iot-Greenhouse/build/bootloader/gdbinit/symbols
+source /home/arcos/Desktop/CPE_TP_TD/IotGreenHouse/Iot-Greenhouse/build/bootloader/gdbinit/connect

@@ -1,0 +1,132 @@
+Command: /home/arcos/.espressif/python_env/idf5.5_py3.13_env/bin/python /home/arcos/.espressif/v5.5.2/esp-idf/tools/idf_monitor.py -p /dev/ttyACM0 -b 115200 --toolchain-prefix riscv32-esp-elf- --target esp32c6 --revision 0 --decode-panic backtrace /home/arcos/Desktop/CPE_TP_TD/IotGreenHouse/Iot-Greenhouse/build/app-template.elf /home/arcos/Desktop/CPE_TP_TD/IotGreenHouse/Iot-Greenhouse/build/bootloader/bootloader.elf -m '/home/arcos/.espressif/python_env/idf5.5_py3.13_env/bin/python' '/home/arcos/.espressif/v5.5.2/esp-idf/tools/idf.py' '-p' '/dev/ttyACM0'
+[0;33mW (2276) DHT11: Timeout (capteur non détecté). Vérifie VCC/GNESP-ROM:esp32c6-20220919[0m
+Build:Sep 19 2022
+rst:0x15 (USB_UART_HPSYS),boot:0x2c (SPI_FAST_FLASH_BOOT)
+Saved PC:0x40802c3a
+SPIWP:0xee
+mode:DIO, clock div:2
+load:0x40875730,len:0x175c
+load:0x4086b910,len:0xec8
+load:0x4086e610,len:0x31c8
+entry 0x4086b91a
+[0;32mI (23) boot: ESP-IDF v5.5.2-dirty 2nd stage bootloader[0m
+[0;32mI (23) boot: compile time Feb  9 2026 15:15:39[0m
+[0;32mI (24) boot: chip revision: v0.2[0m
+[0;32mI (24) boot: efuse block revision: v0.3[0m
+[0;32mI (27) boot.esp32c6: SPI Speed      : 80MHz[0m
+[0;32mI (31) boot.esp32c6: SPI Mode       : DIO[0m
+[0;32mI (35) boot.esp32c6: SPI Flash Size : 2MB[0m
+[0;32mI (38) boot: Enabling RNG early entropy source...[0m
+[0;32mI (43) boot: Partition Table:[0m
+[0;32mI (45) boot: ## Label            Usage          Type ST Offset   Length[0m
+[0;32mI (52) boot:  0 nvs              WiFi data        01 02 00009000 00006000[0m
+[0;32mI (58) boot:  1 phy_init         RF data          01 01 0000f000 00001000[0m
+[0;32mI (65) boot:  2 factory          factory app      00 00 00010000 00100000[0m
+[0;32mI (71) boot: End of partition table[0m
+[0;32mI (75) esp_image: segment 0: paddr=00010020 vaddr=42018020 size=08f74h ( 36724) map[0m
+[0;32mI (89) esp_image: segment 1: paddr=00018f9c vaddr=40800000 size=0707ch ( 28796) load[0m
+[0;32mI (96) esp_image: segment 2: paddr=00020020 vaddr=42000020 size=124e0h ( 74976) map[0m
+[0;32mI (111) esp_image: segment 3: paddr=00032508 vaddr=4080707c size=047ech ( 18412) load[0m
+[0;32mI (116) esp_image: segment 4: paddr=00036cfc vaddr=4080b870 size=0194ch (  6476) load[0m
+[0;32mI (121) boot: Loaded app from partition at offset 0x10000[0m
+[0;32mI (121) boot: Disabling RNG early entropy source...[0m
+[0;32mI (136) cpu_start: Unicore app[0m
+[0;32mI (145) cpu_start: GPIO 17 and 16 are used as console UART I/O pins[0m
+[0;32mI (145) cpu_start: Pro cpu start user code[0m
+[0;32mI (145) cpu_start: cpu freq: 160000000 Hz[0m
+[0;32mI (147) app_init: Application information:[0m
+[0;32mI (151) app_init: Project name:     app-template[0m
+[0;32mI (155) app_init: App version:      1[0m
+[0;32mI (159) app_init: Compile time:     Feb  9 2026 15:15:16[0m
+[0;32mI (164) app_init: ELF file SHA256:  8cb3adeba...[0m
+[0;32mI (168) app_init: ESP-IDF:          v5.5.2-dirty[0m
+[0;32mI (172) efuse_init: Min chip rev:     v0.0[0m
+[0;32mI (176) efuse_init: Max chip rev:     v0.99 [0m
+[0;32mI (180) efuse_init: Chip rev:         v0.2[0m
+[0;32mI (184) heap_init: Initializing. RAM available for dynamic allocation:[0m
+[0;32mI (190) heap_init: At 4080E110 len 0006E500 (441 KiB): RAM[0m
+[0;32mI (195) heap_init: At 4087C610 len 00002F54 (11 KiB): RAM[0m
+[0;32mI (201) heap_init: At 50000000 len 00003FE8 (15 KiB): RTCRAM[0m
+[0;32mI (207) spi_flash: detected chip: gd[0m
+[0;32mI (209) spi_flash: flash io: dio[0m
+[0;33mW (212) spi_flash: Detected size(8192k) larger than the size in the binary image header(2048k). Using the size in the binary image header.[0m
+[0;32mI (224) sleep_gpio: Configure to isolate all GPIO pins in sleep state[0m
+[0;32mI (231) sleep_gpio: Enable automatic switching of GPIO sleep configuration[0m
+[0;32mI (246) main_task: Started on CPU0[0m
+[0;32mI (246) main_task: Calling app_main()[0m
+[0;32mI (246) DHT11: DHT11 sur GPIO4. IMPORTANT: alimente en 3.3V (pas 5V sur DATA).[0m
+[0;32mI (256) DHT11: GPIO4 level (idle) = 1[0m
+[0;33mW (2276) DHT11: Timeout (capteur non détecté). Vérifie VCC/GND/DATA + pull-up.[0m
+[0;33mW (4296) DHT11: Timeout (capteur non détecté). Vérifie VCC/GND/DATA + pull-up.[0m
+[0;33mW (6316) DHT11: Timeout (capteur non détecté). Vérifie VCC/GND/DATA + pull-up.[0m
+[0;33mW (8336) DHT11: Timeout (capteur non détecté). Vérifie VCC/GND/DATA + pull-up.[0m
+[0;33mW (10356) DHT11: Timeout (capteur non détecté). Vérifie VCC/GND/DATA + pull-up.[0m
+[0;33mW (12376) DHT11: Timeout (capteur non détecté). Vérifie VCC/GND/DATA + pull-up.[0m
+[0;33mW (14396) DHT11: Timeout (capteur non détecté). Vérifie VCC/GND/DATA + pull-up.[0m
+[0;33mW (16416) DHT11: Timeout (capteur non détecté). Vérifie VCC/GND/DATA + pull-up.[0m
+[0;33mW (18436) DHT11: Timeout (capteur non détecté). Vérifie VCC/GND/DATA + pull-up.[0m
+[0;33mW (20456) DHT11: Timeout (capteur non détecté). Vérifie VCC/GND/DATA + pull-up.[0m
+[0;33mW (22476) DHT11: Timeout (capteur non détecté). Vérifie VCC/GND/DATA + pull-up.[0m
+[0;33mW (24496) DHT11: Timeout (capteur non détecté). Vérifie VCC/GND/DATA + pull-up.[0m
+[0;33mW (26516) DHT11: Timeout (capteur non détecté). Vérifie VCC/GND/DATA + pull-up.[0m
+[0;33mW (28536) DHT11: Timeout (capteur non détecté). Vérifie VCC/GND/DATA + pull-up.[0m
+[0;33mW (30556) DHT11: Timeout (capteur non détecté). Vérifie VCC/GND/DATA + pull-up.[0m
+[0;33mW (32576) DHT11: Timeout (capteur non détecté). Vérifie VCC/GND/DATA + pull-up.[0m
+[0;33mW (34596) DHT11: Timeout (capteur non détecté). Vérifie VCC/GND/DATA + pull-up.[0m
+[0;33mW (36616) DHT11: Timeout (capteur non détecté). Vérifie VCC/GND/DATA + pull-up.[0m
+[0;33mW (38636) DHT11: Timeout (capteur non détecté). Vérifie VCC/GND/DATA + pull-up.[0m
+[0;33mW (40656) DHT11: Timeout (capteur non détecté). Vérifie VCC/GND/DATA + pull-up.[0m
+[0;33mW (42676) DHT11: Timeout (capteur non détecté). Vérifie VCC/GND/DATA + pull-up.[0m
+[0;33mW (44696) DHT11: Timeout (capteur non détecté). Vérifie VCC/GND/DATA + pull-up.[0m
+[0;33mW (46716) DHT11: Timeout (capteur non détecté). Vérifie VCC/GND/DATA + pull-up.[0m
+[0;33mW (48736) DHT11: Timeout (capteur non détecté). Vérifie VCC/GND/DATA + pull-up.[0m
+[0;33mW (50756) DHT11: Timeout (capteur non détecté). Vérifie VCC/GND/DATA + pull-up.[0m
+[0;33mW (52776) DHT11: Timeout (capteur non détecté). Vérifie VCC/GND/DATA + pull-up.[0m
+[0;33mW (54796) DHT11: Timeout (capteur non détecté). Vérifie VCC/GND/DATA + pull-up.[0m
+[0;33mW (56816) DHT11: Timeout (capteur non détecté). Vérifie VCC/GND/DATA + pull-up.[0m
+[0;33mW (58836) DHT11: Timeout (capteur non détecté). Vérifie VCC/GND/DATA + pull-up.[0m
+[0;33mW (60856) DHT11: Timeout (capteur non détecté). Vérifie VCC/GND/DATA + pull-up.[0m
+[0;33mW (62876) DHT11: Timeout (capteur non détecté). Vérifie VCC/GND/DATA + pull-up.[0m
+[0;33mW (64896) DHT11: Timeout (capteur non détecté). Vérifie VCC/GND/DATA + pull-up.[0m
+[0;33mW (66916) DHT11: Timeout (capteur non détecté). Vérifie VCC/GND/DATA + pull-up.[0m
+[0;33mW (68936) DHT11: Timeout (capteur non détecté). Vérifie VCC/GND/DATA + pull-up.[0m
+[0;33mW (70956) DHT11: Timeout (capteur non détecté). Vérifie VCC/GND/DATA + pull-up.[0m
+[0;33mW (72976) DHT11: Timeout (capteur non détecté). Vérifie VCC/GND/DATA + pull-up.[0m
+[0;33mW (74996) DHT11: Timeout (capteur non détecté). Vérifie VCC/GND/DATA + pull-up.[0m
+[0;33mW (77016) DHT11: Timeout (capteur non détecté). Vérifie VCC/GND/DATA + pull-up.[0m
+[0;33mW (79036) DHT11: Timeout (capteur non détecté). Vérifie VCC/GND/DATA + pull-up.[0m
+[0;33mW (81056) DHT11: Timeout (capteur non détecté). Vérifie VCC/GND/DATA + pull-up.[0m
+[0;33mW (83076) DHT11: Timeout (capteur non détecté). Vérifie VCC/GND/DATA + pull-up.[0m
+[0;33mW (85096) DHT11: Timeout (capteur non détecté). Vérifie VCC/GND/DATA + pull-up.[0m
+[0;33mW (87116) DHT11: Timeout (capteur non détecté). Vérifie VCC/GND/DATA + pull-up.[0m
+[0;33mW (89136) DHT11: Timeout (capteur non détecté). Vérifie VCC/GND/DATA + pull-up.[0m
+[0;33mW (91156) DHT11: Timeout (capteur non détecté). Vérifie VCC/GND/DATA + pull-up.[0m
+[0;33mW (93176) DHT11: Timeout (capteur non détecté). Vérifie VCC/GND/DATA + pull-up.[0m
+[0;33mW (95196) DHT11: Timeout (capteur non détecté). Vérifie VCC/GND/DATA + pull-up.[0m
+[0;33mW (97216) DHT11: Timeout (capteur non détecté). Vérifie VCC/GND/DATA + pull-up.[0m
+[0;33mW (99236) DHT11: Timeout (capteur non détecté). Vérifie VCC/GND/DATA + pull-up.[0m
+[0;33mW (101256) DHT11: Timeout (capteur non détecté). Vérifie VCC/GND/DATA + pull-up.[0m
+[0;33mW (103276) DHT11: Timeout (capteur non détecté). Vérifie VCC/GND/DATA + pull-up.[0m
+[0;33mW (105296) DHT11: Timeout (capteur non détecté). Vérifie VCC/GND/DATA + pull-up.[0m
+[0;33mW (107316) DHT11: Timeout (capteur non détecté). Vérifie VCC/GND/DATA + pull-up.[0m
+[0;33mW (109336) DHT11: Timeout (capteur non détecté). Vérifie VCC/GND/DATA + pull-up.[0m
+[0;33mW (111356) DHT11: Timeout (capteur non détecté). Vérifie VCC/GND/DATA + pull-up.[0m
+[0;33mW (113376) DHT11: Timeout (capteur non détecté). Vérifie VCC/GND/DATA + pull-up.[0m
+[0;33mW (115396) DHT11: Timeout (capteur non détecté). Vérifie VCC/GND/DATA + pull-up.[0m
+[0;33mW (117416) DHT11: Timeout (capteur non détecté). Vérifie VCC/GND/DATA + pull-up.[0m
+[0;33mW (119436) DHT11: Timeout (capteur non détecté). Vérifie VCC/GND/DATA + pull-up.[0m
+[0;33mW (121456) DHT11: Timeout (capteur non détecté). Vérifie VCC/GND/DATA + pull-up.[0m
+[0;33mW (123476) DHT11: Timeout (capteur non détecté). Vérifie VCC/GND/DATA + pull-up.[0m
+[0;33mW (125496) DHT11: Timeout (capteur non détecté). Vérifie VCC/GND/DATA + pull-up.[0m
+[0;33mW (127516) DHT11: Timeout (capteur non détecté). Vérifie VCC/GND/DATA + pull-up.[0m
+[0;33mW (129536) DHT11: Timeout (capteur non détecté). Vérifie VCC/GND/DATA + pull-up.[0m
+[0;33mW (131556) DHT11: Timeout (capteur non détecté). Vérifie VCC/GND/DATA + pull-up.[0m
+[0;33mW (133576) DHT11: Timeout (capteur non détecté). Vérifie VCC/GND/DATA + pull-up.[0m
+[0;33mW (135596) DHT11: Timeout (capteur non détecté). Vérifie VCC/GND/DATA + pull-up.[0m
+[0;33mW (137616) DHT11: Timeout (capteur non détecté). Vérifie VCC/GND/DATA + pull-up.[0m
+[0;33mW (139636) DHT11: Timeout (capteur non détecté). Vérifie VCC/GND/DATA + pull-up.[0m
+[0;33mW (141656) DHT11: Timeout (capteur non détecté). Vérifie VCC/GND/DATA + pull-up.[0m
+[0;33mW (143676) DHT11: Timeout (capteur non détecté). Vérifie VCC/GND/DATA + pull-up.[0m
+[0;33mW (145696) DHT11: Timeout (capteur non détecté). Vérifie VCC/GND/DATA + pull-up.[0m
+[0;33mW (147716) DHT11: Timeout (capteur non détecté). Vérifie VCC/GND/DATA + pull-up.[0m
+[0;33mW (149736) DHT11: Timeout (capteur non détecté). Vérifie VCC/GND/DATA + pull-up.[0m

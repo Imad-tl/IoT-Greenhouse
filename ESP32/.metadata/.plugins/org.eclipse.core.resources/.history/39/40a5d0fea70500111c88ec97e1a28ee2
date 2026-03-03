@@ -1,0 +1,45 @@
+#include <stdio.h>
+#include "freertos/FreeRTOS.h"
+#include "freertos/task.h"
+#include "esp_log.h"
+#include "driver/gpio.h"
+#include "led_strip.h"
+
+#define LED_STRIP_GPIO      8          // DevKitC-1 RGB LED is on GPIO8
+#define LED_STRIP_LED_NUM   1
+
+static const char *TAG = "rgb";
+
+void app_main(void)
+{
+    // LED strip config (RMT backend)
+    led_strip_config_t strip_config = {
+        .strip_gpio_num = LED_STRIP_GPIO,
+        .max_leds = LED_STRIP_LED_NUM,
+        .led_pixel_format = LED_PIXEL_FORMAT_GRB,   // WS2812 usually GRB
+        .led_model = LED_MODEL_WS2812,
+        .flags.invert_out = false,
+    };
+
+    led_strip_rmt_config_t rmt_config = {
+        .clk_src = RMT_CLK_SRC_DEFAULT,
+        .resolution_hz = 10 * 1000 * 1000, // 10MHz works well for WS2812
+        .flags.with_dma = false,
+    };
+
+    led_strip_handle_t strip = NULL;
+    ESP_ERROR_CHECK(led_strip_new_rmt_device(&strip_config, &rmt_config, &strip));
+    ESP_LOGI(TAG, "LED strip initialized on GPIO%d", LED_STRIP_GPIO);
+
+    while (1) {
+        // Rouge
+        ESP_ERROR_CHECK(led_strip_set_pixel(strip, 0, 255, 0, 0));
+        ESP_ERROR_CHECK(led_strip_refresh(strip));
+        vTaskDelay(pdMS_TO_TICKS(500));
+
+        // Vert
+        ESP_ERROR_CHECK(led_strip_set_pixel(strip, 0, 0, 255, 0));
+        ESP_ERROR_CHECK(led_strip_refresh(strip));
+        vTaskDelay(pdMS_TO_TICKS(500));
+    }
+}

@@ -1,0 +1,25 @@
+void app_main(void)
+{
+    ESP_LOGI(TAG, "DHT11 sur GPIO4. Alimente en 3.3V (pas 5V).");
+
+    // (4) Test hardware: lire l'état du pin DATA
+    gpio_set_direction(DHT_GPIO, GPIO_MODE_INPUT);
+    gpio_set_pull_mode(DHT_GPIO, GPIO_PULLUP_ONLY);
+    ESP_LOGI(TAG, "GPIO4 level (idle) = %d", gpio_get_level(DHT_GPIO));
+    vTaskDelay(pdMS_TO_TICKS(2000));
+
+    while (1) {
+        int t = 0, h = 0;
+        esp_err_t err = dht11_read(&t, &h);
+
+        if (err == ESP_OK) {
+            ESP_LOGI(TAG, "Temp: %d °C | Hum: %d %%", t, h);
+        } else if (err == ESP_ERR_INVALID_CRC) {
+            ESP_LOGW(TAG, "CRC invalide (bruit / niveau logique).");
+        } else {
+            ESP_LOGW(TAG, "Timeout (capteur non detecté). Vérifie câblage/pull-up/alimentation.");
+        }
+
+        vTaskDelay(pdMS_TO_TICKS(2000));
+    }
+}

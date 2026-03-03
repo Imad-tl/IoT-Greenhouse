@@ -1,0 +1,102 @@
+#include <stdio.h>
+#include "freertos/FreeRTOS.h"
+#include "freertos/task.h"
+#include "esp_log.h"
+#include "esp_err.h"
+
+#include "driver/gpio.h"
+#include "esp_adc/adc_oneshot.h"
+#include "esp_adc/adc_cali.h"
+#include "esp_adc/adc_cali_scheme.h"
+
+static const char *TAG = "PHOTO";
+
+// Mets ici le GPIO où tu branches AO/SIG (doit être ADC-capable)
+#define PHOTO_GPIO  GPIO_NUM_2   // <-- change si besoin
+
+// Seuil "à l’œil" (à régler)
+#define THRESH_RAW  2000
+
+static void print_bar(int raw, int max_raw)
+{
+    int bars = (raw * 20) / max_raw;
+    if (bars < 0) bars = 0;
+    if (bars > 20) bars = 20;
+
+    printf("[");
+    for (int i = 0; i < 20; i++) printf(i < bars ? "#" : ".");
+    printf("]");
+}
+
+void app_main(void)
+{
+    adc_oneshot_unit_handle_t adc_handle;
+    adc_oneshot_unit_init_cfg_t init_cfg = {
+        .unit_id = ADC_UNIT_1,
+        .ulp_mode = ADC_ULP_MODE_DISABLE
+    };
+    ESP_ERROR_CHECK(adc_oneshot_new_unit(&init_cfg, &adc_handle));
+
+    // Convertit GPIO -> (unit, channel). Si ton GPIO n’est pas ADC-capable, ça échoue.
+    adc_unit_t unit;
+    adc_channel_t channel;
+    esp_err_t err = adc_oneshot_io_to_channel(PHOTO_GPIO, &unit, &channel);
+    if (err != ESP_OK || unit != ADC_UNIT_1) {
+        ESP_LOGE(TAG, "GPIO %d n'est pas utilisable sur ADC1 (ou pas ADC du tout). Change PHOTO_GPIO.", (int)PHOTO_GPIO);
+        return;
+    }
+
+    adc_oneshot_chan_cfg_t chan_cfg = {
+        .bitwidth = ADC_BITWIDTH_DEFAULT,
+        .atten = ADC_ATTEN_DB_11, // large plage (jusqu'à ~3.3V selon chip)
+    };
+    ESP_ERROR_CHECK(adc_oneshot_config_channel(adc_handle, channel, &chan_cfg));
+
+    // Calibration voltage (optionnel)
+    adc_cali_handle_t cali = NULL;
+    bool cali_ok = false;
+#if ADC_CALI_SCHEME_CURVE_FITTING_SUPPORTED
+    {
+        adc_cali_curve_fitting_config_t cali_cfg = {
+            .unit_id = ADC_UNIT_1,
+            .chan = channel,
+            .atten = chan_cfg.atten,
+            .bitwidth = chan_cfg.bitwidth,
+        };
+        if (adc_cali_create_scheme_curve_fitting(&cali_cfg, &cali) == ESP_OK) cali_ok = true;
+    }
+#elif ADC_CALI_SCHEME_LINE_FITTING_SUPPORTED
+    {
+        adc_cali_line_fitting_config_t cali_cfg = {
+            .unit_id = ADC_UNIT_1,
+            .atten = chan_cfg.atten,
+            .bitwidth = chan_cfg.bitwidth,
+        };
+        if (adc_cali_create_scheme_line_fitting(&cali_cfg, &cali) == ESP_OK) cali_ok = true;
+    }
+#endif
+
+    ESP_LOGI(TAG, "Photoresistor sur GPIO%d (ADC1_CH%d).", (int)PHOTO_GPIO, (int)channel);
+    ESP_LOGI(TAG, "Lis la valeur brute + (option) tension. Ajuste THRESH_RAW si besoin.");
+
+    while (1) {
+        int raw = 0;
+        ESP_ERROR_CHECK(adc_oneshot_read(adc_handle, channel, &raw));
+
+        int mv = -1;
+        if (cali_ok) {
+            adc_cali_raw_to_voltage(cali, raw, &mv);
+        }
+
+        // max_raw approx selon bitwidth; on prend 4095 comme repère (12 bits)
+        print_bar(raw, 4095);
+
+        if (cali_ok) {
+            printf("  raw=%4d  %4d mV  -> %s\n", raw, mv, (raw > THRESH_RAW) ? "LUMIERE" : "SOMBRE");
+        } else {
+            printf("  raw=%4d  -> %s\n", raw, (raw > THRESH_RAW) ? "LUMIERE" : "SOMBRE");
+        }
+
+        vTaskDelay(pdMS_TO_TICKS(500));
+    }
+}

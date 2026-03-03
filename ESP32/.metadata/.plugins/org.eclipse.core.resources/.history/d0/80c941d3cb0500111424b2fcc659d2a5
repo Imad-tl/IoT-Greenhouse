@@ -1,0 +1,116 @@
+#include <stdio.h>
+#include "freertos/FreeRTOS.h"
+#include "freertos/task.h"
+#include "freertos/portmacro.h"
+#include "esp_log.h"
+#include "esp_err.h"
+#include "driver/gpio.h"
+#include "esp_rom_sys.h"
+
+#define DHT_GPIO GPIO_NUM_4
+
+static const char *TAG = "DHT11";
+
+// Attend que le niveau change (sort quand gpio != level). Retourne temps écoulé (us) ou 0 si timeout.
+static inline uint32_t wait_level(gpio_num_t pin, int level, uint32_t timeout_us)
+{
+    uint32_t t = 0;
+    while (gpio_get_level(pin) == level) {
+        if (t++ >= timeout_us) return 0;
+        esp_rom_delay_us(1);
+    }
+    return t;
+}
+
+static esp_err_t dht11_read(int *temp_c, int *hum_pct)
+{
+    uint8_t data[5] = {0};
+
+    // Start signal: pull low ~18ms
+    gpio_set_direction(DHT_GPIO, GPIO_MODE_OUTPUT);
+    gpio_set_level(DHT_GPIO, 0);
+    vTaskDelay(pdMS_TO_TICKS(20));
+    gpio_set_level(DHT_GPIO, 1);
+    esp_rom_delay_us(30);
+
+    // Switch to input with pull-up
+    gpio_set_direction(DHT_GPIO, GPIO_MODE_INPUT);
+    gpio_set_pull_mode(DHT_GPIO, GPIO_PULLUP_ONLY);
+
+    // Debug rapide: est-ce que le capteur réagit (devrait tirer à 0/1 juste après le start)
+    int lvl1 = gpio_get_level(DHT_GPIO);
+    esp_rom_delay_us(200);
+    int lvl2 = gpio_get_level(DHT_GPIO);
+    ESP_LOGD(TAG, "after start: level now=%d, level+200us=%d", lvl1, lvl2);
+
+    // Timing-critical section
+    portMUX_TYPE mux = portMUX_INITIALIZER_UNLOCKED;
+    portENTER_CRITICAL(&mux);
+
+    // Response: ~80us low, ~80us high, then low
+    if (!wait_level(DHT_GPIO, 1, 300)) { portEXIT_CRITICAL(&mux); return ESP_ERR_TIMEOUT; } // wait go low
+    if (!wait_level(DHT_GPIO, 0, 300)) { portEXIT_CRITICAL(&mux); return ESP_ERR_TIMEOUT; } // wait go high
+    if (!wait_level(DHT_GPIO, 1, 300)) { portEXIT_CRITICAL(&mux); return ESP_ERR_TIMEOUT; } // wait go low
+
+    // Read 40 bits
+    for (int i = 0; i < 40; i++) {
+        // Each bit starts with ~50us low
+        if (!wait_level(DHT_GPIO, 0, 150)) { portEXIT_CRITICAL(&mux); return ESP_ERR_TIMEOUT; }
+        // Then high: ~26-28us => 0, ~70us => 1
+        uint32_t high_us = wait_level(DHT_GPIO, 1, 250);
+        if (high_us == 0) { portEXIT_CRITICAL(&mux); return ESP_ERR_TIMEOUT; }
+
+        int bit = (high_us > 50) ? 1 : 0;
+        data[i / 8] <<= 1;
+        data[i / 8] |= bit;
+    }
+
+    portEXIT_CRITICAL(&mux);
+
+    // Checksum
+    uint8_t sum = (uint8_t)(data[0] + data[1] + data[2] + data[3]);
+    if (sum != data[4]) return ESP_ERR_INVALID_CRC;
+
+    // DHT11: [0]=hum int, [1]=hum dec (souvent 0), [2]=temp int, [3]=temp dec (souvent 0)
+    *hum_pct = data[0];
+    *temp_c  = data[2];
+    return ESP_OK;
+}
+
+void app_main(void)
+{
+    // IMPORTANT: DHT11 doit idéalement être alimenté en 3.3V sur ESP32-C6
+    ESP_LOGI(TAG, "DHT11 sur GPIO4. Alim conseillee: 3.3V (pas 5V sur DATA).");
+
+    // Test hardware idle level
+    gpio_set_direction(DHT_GPIO, GPIO_MODE_INPUT);
+    gpio_set_pull_mode(DHT_GPIO, GPIO_PULLUP_ONLY);
+    int idle = gpio_get_level(DHT_GPIO);
+    ESP_LOGI(TAG, "GPIO4 level (idle) = %d", idle);
+    vTaskDelay(pdMS_TO_TICKS(1000));
+
+    while (1) {
+        int temperature = 0;
+        int humidity = 0;
+
+        esp_err_t err = dht11_read(&temperature, &humidity);
+
+        if (err == ESP_OK) {
+            // Affichage propre style Arduino
+            printf("Temperature = %d deg.C\tHumidity = %d %%\n", temperature, humidity);
+
+            // Exemple de condition comme Arduino
+            if (temperature > 20 || humidity > 70) {
+                printf("ALERTE: seuil depasse (T>20 ou H>70)\n");
+            }
+            fflush(stdout);
+
+        } else if (err == ESP_ERR_INVALID_CRC) {
+            ESP_LOGW(TAG, "CRC invalide (bruit / niveau logique / cablage).");
+        } else {
+            ESP_LOGW(TAG, "Timeout (capteur non detecte). Verifie VCC/GND/DATA + pull-up + alim 3.3V.");
+        }
+
+        vTaskDelay(pdMS_TO_TICKS(2000));
+    }
+}

@@ -1,0 +1,18 @@
+                            Memory Type Usage Summary                             
+┏━━━━━━━━━━━━━━━━━━━━━┳━━━━━━━━━━━━━━┳━━━━━━━━━━┳━━━━━━━━━━━━━━━━┳━━━━━━━━━━━━━━━┓
+┃ Memory Type/Section ┃ Used [bytes] ┃ Used [%] ┃ Remain [bytes] ┃ Total [bytes] ┃
+┡━━━━━━━━━━━━━━━━━━━━━╇━━━━━━━━━━━━━━╇━━━━━━━━━━╇━━━━━━━━━━━━━━━━╇━━━━━━━━━━━━━━━┩
+│ Flash Code          │       126580 │          │                │               │
+│    .text            │        85036 │          │                │               │
+│    .rodata          │        41288 │          │                │               │
+│    .appdesc         │          256 │          │                │               │
+│ DIRAM               │        58964 │    13.04 │         393148 │        452112 │
+│    .text            │        48228 │    10.67 │                │               │
+│    .data            │         6640 │     1.47 │                │               │
+│    .bss             │         4096 │     0.91 │                │               │
+│ LP SRAM             │           56 │     0.34 │          16328 │         16384 │
+│    .force_slow      │           32 │      0.2 │                │               │
+│    .rtc_reserved    │           24 │     0.15 │                │               │
+└─────────────────────┴──────────────┴──────────┴────────────────┴───────────────┘
+/home/arcos/.espressif/tools/python/v5.5.2/venv/bin/python /home/arcos/.espressif/v5.5.2/esp-idf/components/partition_table/gen_esp32part.py /home/arcos/Desktop/CPE_TP_TD/IotGreenHouse/Iot-Greenhouse/build/partition_table/partition-table.bin
+Total time taken to build the project: 4,756 ms

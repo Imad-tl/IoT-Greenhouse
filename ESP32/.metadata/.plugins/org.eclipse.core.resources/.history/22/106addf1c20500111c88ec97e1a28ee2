@@ -1,0 +1,88 @@
+#include <stdio.h>
+#include "freertos/FreeRTOS.h"
+#include "freertos/task.h"
+#include "esp_log.h"
+#include "esp_err.h"
+#include "driver/gpio.h"
+#include "esp_rom_sys.h"
+#include "freertos/portmacro.h"
+
+#define DHT_GPIO GPIO_NUM_4
+
+static const char *TAG = "DHT11";
+
+static inline uint32_t wait_level(gpio_num_t pin, int level, uint32_t timeout_us)
+{
+    uint32_t t = 0;
+    while (gpio_get_level(pin) == level) {
+        if (t++ >= timeout_us) return 0;
+        esp_rom_delay_us(1);
+    }
+    return t;
+}
+
+static esp_err_t dht11_read(int *temp_c, int *hum_pct)
+{
+    uint8_t data[5] = {0};
+
+    // DHT11 start: pull low ~18ms
+    gpio_set_direction(DHT_GPIO, GPIO_MODE_OUTPUT);
+    gpio_set_level(DHT_GPIO, 0);
+    vTaskDelay(pdMS_TO_TICKS(20));
+    gpio_set_level(DHT_GPIO, 1);
+    esp_rom_delay_us(30);
+
+    // Input with pull-up
+    gpio_set_direction(DHT_GPIO, GPIO_MODE_INPUT);
+    gpio_set_pull_mode(DHT_GPIO, GPIO_PULLUP_ONLY);
+
+    // Read needs tight timing: block interrupts during the transaction
+    portMUX_TYPE mux = portMUX_INITIALIZER_UNLOCKED;
+    portENTER_CRITICAL(&mux);
+
+    // Response: 80us low, 80us high
+    if (!wait_level(DHT_GPIO, 1, 200)) { portEXIT_CRITICAL(&mux); return ESP_ERR_TIMEOUT; } // wait go low
+    if (!wait_level(DHT_GPIO, 0, 200)) { portEXIT_CRITICAL(&mux); return ESP_ERR_TIMEOUT; } // wait go high
+    if (!wait_level(DHT_GPIO, 1, 200)) { portEXIT_CRITICAL(&mux); return ESP_ERR_TIMEOUT; } // wait go low
+
+    // 40 bits
+    for (int i = 0; i < 40; i++) {
+        if (!wait_level(DHT_GPIO, 0, 100)) { portEXIT_CRITICAL(&mux); return ESP_ERR_TIMEOUT; } // end of low
+        uint32_t high_us = wait_level(DHT_GPIO, 1, 150);                                       // measure high
+        if (high_us == 0) { portEXIT_CRITICAL(&mux); return ESP_ERR_TIMEOUT; }
+
+        int bit = (high_us > 50) ? 1 : 0; // DHT11: ~26-28us=0, ~70us=1
+        data[i / 8] <<= 1;
+        data[i / 8] |= bit;
+    }
+
+    portEXIT_CRITICAL(&mux);
+
+    // checksum
+    uint8_t sum = (uint8_t)(data[0] + data[1] + data[2] + data[3]);
+    if (sum != data[4]) return ESP_ERR_INVALID_CRC;
+
+    *hum_pct = data[0];   // integer %
+    *temp_c  = data[2];   // integer °C
+    return ESP_OK;
+}
+
+void app_main(void)
+{
+    ESP_LOGI(TAG, "DHT11 sur GPIO4. Alimente en 3.3V (pas 5V).");
+
+    while (1) {
+        int t = 0, h = 0;
+        esp_err_t err = dht11_read(&t, &h);
+
+        if (err == ESP_OK) {
+            ESP_LOGI(TAG, "Temp: %d °C | Hum: %d %%", t, h);
+        } else if (err == ESP_ERR_INVALID_CRC) {
+            ESP_LOGW(TAG, "CRC invalide (bruit / niveau logique).");
+        } else {
+            ESP_LOGW(TAG, "Timeout (capteur non detecté). Vérifie câblage/pull-up/alimentation.");
+        }
+
+        vTaskDelay(pdMS_TO_TICKS(2000));
+    }
+}

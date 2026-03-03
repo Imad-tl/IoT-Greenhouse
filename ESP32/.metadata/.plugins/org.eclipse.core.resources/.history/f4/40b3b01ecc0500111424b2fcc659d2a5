@@ -1,0 +1,31 @@
+#include <stdio.h>
+#include "freertos/FreeRTOS.h"
+#include "freertos/task.h"
+#include "driver/gpio.h"
+#include "esp_log.h"
+
+#define PIN GPIO_NUM_4
+static const char *TAG = "TEST";
+
+void app_main(void)
+{
+    gpio_config_t io = {
+        .pin_bit_mask = 1ULL << PIN,
+        .mode = GPIO_MODE_OUTPUT,
+        .pull_up_en = 0,
+        .pull_down_en = 0,
+        .intr_type = GPIO_INTR_DISABLE
+    };
+    gpio_config(&io);
+
+    int state = 0;
+    while (1) {
+        state = !state;
+        gpio_set_level(PIN, state);
+
+        ESP_LOGI(TAG, "GPIO4 = %d (si LED branchée -> ca clignote lentement)", state);
+        printf("APP OK\n");
+
+        vTaskDelay(pdMS_TO_TICKS(2000)); // toutes les 2 secondes
+    }
+}
