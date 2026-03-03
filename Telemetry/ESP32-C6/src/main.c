@@ -23,6 +23,8 @@
 #include "host/util/util.h"
 #include "services/gap/ble_svc_gap.h"
 #include "services/gatt/ble_svc_gatt.h"
+#include "mbedtls/aes.h"
+#include "esp_random.h"
 
 /* Roles possibles */
 #define ROLE_TEMP_HUM  1
@@ -82,12 +84,22 @@ static char     g_last_payload[128] = "";
 
 static int  gap_event_cb(struct ble_gap_event *event, void *arg);
 static void start_advertising(void);
+static int  aes_encrypt(const uint8_t *plain, size_t plain_len,
+                        uint8_t *out, size_t *out_len);
 
 static int on_read(uint16_t conn, uint16_t attr,
                    struct ble_gatt_access_ctxt *ctxt, void *arg)
 {
     if (ctxt->op != BLE_GATT_ACCESS_OP_READ_CHR) return BLE_ATT_ERR_UNLIKELY;
-    os_mbuf_append(ctxt->om, g_last_payload, strlen(g_last_payload));
+    /* Chiffrer avant de repondre a une lecture */
+    uint8_t encrypted[160];
+    size_t  enc_len = 0;
+    if (strlen(g_last_payload) == 0 ||
+        aes_encrypt((const uint8_t *)g_last_payload, strlen(g_last_payload),
+                    encrypted, &enc_len) != 0) {
+        return BLE_ATT_ERR_UNLIKELY;
+    }
+    os_mbuf_append(ctxt->om, encrypted, enc_len);
     return 0;
 }
 
@@ -151,6 +163,9 @@ static int gap_event_cb(struct ble_gap_event *event, void *arg)
     case BLE_GAP_EVENT_SUBSCRIBE:
         ESP_LOGI(TAG, "Notifications BLE activees");
         break;
+    case BLE_GAP_EVENT_MTU:
+        ESP_LOGI(TAG, "MTU negocie : %d", event->mtu.value);
+        break;
     default: break;
     }
     return 0;
@@ -174,12 +189,65 @@ static void ble_host_task(void *param)
     nimble_port_freertos_deinit();
 }
 
+/* ===================== CHIFFREMENT AES-128-CBC ===================== */
+/* Cle pre-partagee (PSK) 16 octets — identique sur C6 et S3 */
+static const uint8_t AES_PSK[16] = {
+    0x53, 0x65, 0x72, 0x72, 0x65, 0x49, 0x6F, 0x54,  /* SerreIoT */
+    0x32, 0x30, 0x32, 0x36, 0x4B, 0x65, 0x79, 0x21   /* 2026Key! */
+};
+
+/*
+ * Chiffre `plain` (plain_len octets) en AES-128-CBC.
+ * Retourne le buffer [IV (16)][ciphertext (padded)] dans `out`.
+ * `out_len` recoit la taille totale. `out` doit faire au moins plain_len + 32.
+ * Retourne 0 si OK.
+ */
+static int aes_encrypt(const uint8_t *plain, size_t plain_len,
+                       uint8_t *out, size_t *out_len)
+{
+    /* Padding PKCS7 : on complete pour arriver a un multiple de 16 */
+    uint8_t pad = 16 - (plain_len % 16);
+    size_t padded_len = plain_len + pad;
+    uint8_t padded[128];
+    if (padded_len > sizeof(padded)) return -1;
+    memcpy(padded, plain, plain_len);
+    memset(padded + plain_len, pad, pad);
+
+    /* IV aleatoire de 16 octets */
+    uint8_t iv[16];
+    esp_fill_random(iv, sizeof(iv));
+    memcpy(out, iv, 16);  /* IV en tete du message */
+
+    /* Chiffrement AES-128-CBC */
+    mbedtls_aes_context ctx;
+    mbedtls_aes_init(&ctx);
+    mbedtls_aes_setkey_enc(&ctx, AES_PSK, 128);
+    uint8_t iv_copy[16];
+    memcpy(iv_copy, iv, 16);  /* mbedtls modifie l'IV en place */
+    int ret = mbedtls_aes_crypt_cbc(&ctx, MBEDTLS_AES_ENCRYPT,
+                                     padded_len, iv_copy, padded, out + 16);
+    mbedtls_aes_free(&ctx);
+
+    *out_len = 16 + padded_len;  /* IV + ciphertext */
+    return ret;
+}
+
 static void ble_notify(const char *payload)
 {
     strncpy(g_last_payload, payload, sizeof(g_last_payload) - 1);
     g_last_payload[sizeof(g_last_payload) - 1] = '\0';
     if (!g_connected) return;
-    struct os_mbuf *om = ble_hs_mbuf_from_flat(payload, strlen(payload));
+
+    /* Chiffrer le payload avant envoi */
+    uint8_t encrypted[160];
+    size_t  enc_len = 0;
+    if (aes_encrypt((const uint8_t *)payload, strlen(payload),
+                    encrypted, &enc_len) != 0) {
+        ESP_LOGE(TAG, "Erreur chiffrement AES");
+        return;
+    }
+
+    struct os_mbuf *om = ble_hs_mbuf_from_flat(encrypted, enc_len);
     if (om) ble_gatts_notify_custom(g_conn, h_data, om);
 }
 
@@ -192,6 +260,7 @@ static void ble_init(void)
     }
 
     nimble_port_init();
+    ble_att_set_preferred_mtu(256);   /* MTU large pour AES chiffre */
     ble_hs_cfg.sync_cb  = on_ble_ready;
     ble_hs_cfg.reset_cb = on_ble_error;
 
