@@ -1,4 +1,0 @@
-additional_options=--compile-commands-dir\=/home/arcos/Desktop/CPE_TP_TD/IotGreenHouse/Iot-Greenhouse/build
-clangd_path=/home/arcos/.espressif/tools/esp-clang/esp-19.1.2_20250312/esp-clang/bin/clangd
-eclipse.preferences.version=1
-query_driver=**

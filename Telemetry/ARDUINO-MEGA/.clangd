@@ -1,3 +1,0 @@
-CompileFlags:
-  CompilationDatabase: /home/arcos/Desktop/CPE_TP_TD/IotGreenHouse/Iot-Greenhouse/build
-  Remove: [-m*, -f*]

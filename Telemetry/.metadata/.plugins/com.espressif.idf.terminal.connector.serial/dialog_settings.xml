@@ -1,9 +1,0 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<section name="Workbench">
-	<section name="SerialSettingsPage">
-		<item key="idf.monitor.project" value="Iot-Greenhouse"/>
-		<item key="cdtserial.portName" value="/dev/ttyACM0"/>
-		<item key="idf.monitor.filter" value=""/>
-		<item key="idf.monitor.encryption" value="false"/>
-	</section>
-</section>
