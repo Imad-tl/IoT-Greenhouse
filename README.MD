@@ -1,6 +1,14 @@
-# IoT Greenhouse — Linux only
+# Présentation du projet
 
-## Prérequis
+Ce projet vise à simuler une serre connectée (“Greenhouse”) à petite échelle en instrumentant l’environnement avec plusieurs capteurs et en remontant leurs données vers une passerelle. La serre est représentée par trois grandeurs typiques : température/humidité, luminosité et mouvement, afin de reproduire un scénario réaliste de suivi d’ambiance et de détection d’événements.
+
+L’architecture adoptée est une architecture multi-nœuds : chaque capteur est associé à un nœud de collecte (ESP32-C6) qui publie ses mesures vers une passerelle (ESP32-S3). La passerelle centralise les flux provenant de plusieurs nœuds, ce qui permet d’avoir un point unique de réception et de traitement des données.
+
+Enfin, la chaîne est conçue pour aller au-delà du réseau local : la passerelle transmet les données vers un module STM32 LoRaWAN (uplink), qui assure ensuite la remontée vers le cloud (via un réseau LoRaWAN), afin de reproduire un parcours complet “terrain → passerelle → réseau longue portée → cloud”.
+
+---
+
+## Prérequis environnement d'exécution 
 
 - Linux (toute distribution parmi : Debian/Ubuntu, RHEL/CentOS, Fedora, Arch, openSUSE, Alpine, Snap)
 - `make` — se bootstrape via `bash scripts/install-make.sh` si absent
