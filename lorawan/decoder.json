@@ -1,0 +1,99 @@
+function decodeUplink(input) {
+    var raw = "";
+    for (var i = 0; i < input.bytes.length; i++) {
+        raw += String.fromCharCode(input.bytes[i]);
+    }
+
+    var decoded = {
+        raw: raw,
+        temperature: null,
+        humidity: null,
+        luminosity: null,
+        motion: null,
+        seq: null,
+        prio: null,
+        type: null
+    };
+
+    var errors = [];
+    var warnings = [];
+
+    // SEQ
+    var seqMatch = raw.match(/SEQ=(\d+)/);
+    if (seqMatch) decoded.seq = parseInt(seqMatch[1], 10);
+
+    // PRIO
+    var prioMatch = raw.match(/PRIO=([^;]+)/);
+    if (prioMatch) decoded.prio = prioMatch[1];
+
+    // TYPE
+    var typeMatch = raw.match(/TYPE=([^;]+)/);
+    if (typeMatch) decoded.type = typeMatch[1];
+
+    // Temperature
+    var tMatch = raw.match(/T=([-\d.]+)/);
+    if (tMatch) {
+        decoded.temperature = parseFloat(tMatch[1]);
+        if (isNaN(decoded.temperature)) {
+            errors.push("Valeur T invalide");
+            decoded.temperature = null;
+        }
+    } else {
+        errors.push("Champ T manquant");
+    }
+
+    // Humidite
+    var hMatch = raw.match(/H=([-\d.]+)/);
+    if (hMatch) {
+        decoded.humidity = parseFloat(hMatch[1]);
+        if (isNaN(decoded.humidity)) {
+            errors.push("Valeur H invalide");
+            decoded.humidity = null;
+        }
+    } else {
+        errors.push("Champ H manquant");
+    }
+
+    // Luminosite
+    var lumMatch = raw.match(/LUM=([-\d.]+)/);
+    if (lumMatch) {
+        decoded.luminosity = parseFloat(lumMatch[1]);
+        if (isNaN(decoded.luminosity)) {
+            errors.push("Valeur LUM invalide");
+            decoded.luminosity = null;
+        }
+    } else {
+        errors.push("Champ LUM manquant");
+    }
+
+    // Mouvement
+    var motMatch = raw.match(/MOT=([01])/);
+    if (motMatch) {
+        decoded.motion = parseInt(motMatch[1], 10);
+    } else {
+        errors.push("Champ MOT manquant");
+    }
+
+    // Validation des plages
+    if (decoded.temperature !== null &&
+        (decoded.temperature < -40 || decoded.temperature > 85)) {
+        warnings.push("Temperature hors plage : " + decoded.temperature);
+    }
+    if (decoded.humidity !== null &&
+        (decoded.humidity < 0 || decoded.humidity > 100)) {
+        warnings.push("Humidite hors plage : " + decoded.humidity);
+    }
+    if (decoded.luminosity !== null && decoded.luminosity < 0) {
+        warnings.push("Luminosite negative : " + decoded.luminosity);
+    }
+    if (decoded.motion !== null &&
+        decoded.motion !== 0 && decoded.motion !== 1) {
+        warnings.push("Valeur MOT inattendue : " + decoded.motion);
+    }
+
+    return {
+        data: decoded,
+        errors: errors,
+        warnings: warnings
+    };
+}
