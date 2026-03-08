@@ -56,6 +56,15 @@ c6-build-all: c6-build-temp-hum c6-build-lum c6-build-motion
 
 c6-flash-all: c6-flash-temp-hum c6-flash-lum c6-flash-motion
 
+# ─── ESP32-S3 ──────────────────────────────────────────────────────────────
+.PHONY: s3-build s3-flash s3-monitor
+
+s3-build:
+	idf.py build
+
+s3-flash:
+	idf.py flash
+
 # ── Port utilities ────────────────────────────────────────────────────────────
 .PHONY: ports port-kill
 
