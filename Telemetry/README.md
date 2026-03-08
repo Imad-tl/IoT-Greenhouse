@@ -38,7 +38,7 @@ Pour résoudre cela, l’UART de l’Arduino a été basculé sur UART1 côté E
 broches dédiées GPIO4 (RX) et GPIO5 (TX), de manière à conserver l’USB comme canal de
 debug indépendant.
 
-![Pinout / UART1 sur ESP32-C6](./Esp32c6_pins.png)
+![Pinout / UART1 sur ESP32-C6](./images/Esp32c6_pins.png)
 
 Après le choix du transport UART, la question du format de données s’est posée. Un format
 ASCII KEY=VALUE séparé par ; a été adopté, avec un framing basé sur la fin de ligne (\n \r).
@@ -233,11 +233,11 @@ ID=2;SEQ=1042;LUM=287;ETAT=SOMBRE
 <table>
   <tr>
     <td align="center">
-      <img src="./arduino_espc6.jpg" alt="Montage ARDUINO MEGA avec ESP32-C6 - photo 1" width="400"><br>
+      <img src="./images/arduino_espc6.jpg" alt="Montage ARDUINO MEGA avec ESP32-C6 - photo 1" width="400"><br>
       <em>Photo 1</em>
     </td>
     <td align="center">
-      <img src="./arduino_espc6_2.jpg" alt="Montage ARDUINO MEGA avec ESP32-C6 - photo 2" width="400"><br>
+      <img src="./images/arduino_espc6_2.jpg" alt="Montage ARDUINO MEGA avec ESP32-C6 - photo 2" width="400"><br>
       <em>Photo 2</em>
     </td>
   </tr>
@@ -246,13 +246,13 @@ ID=2;SEQ=1042;LUM=287;ETAT=SOMBRE
 ## Montage des 3 cartes ESP32-C6 avec les 3 capteurs et les ponts diviseurs de tension
 
 <p align="center">
-  <img src="./espc6_capteurs.jpg" alt="Montage des 3 cartes ESP32-C6 avec les capteurs et les ponts diviseurs de tension" width="500"><br>
+  <img src="./images/espc6_capteurs.jpg" alt="Montage des 3 cartes ESP32-C6 avec les capteurs et les ponts diviseurs de tension" width="500"><br>
   <em>Photo 3</em>
 </p>
 
 ## Montage de la carte ESP32-S3 avec la carte STM32-LORAWAN en liaison série (UART)
 
 <p align="center">
-  <img src="./espS3.jpg" alt="Montage de la carte ESP32-S3 avec la carte STM32-LORAWAN en liaison série (UART)" width="500"><br>
+  <img src="./images/espS3.jpg" alt="Montage de la carte ESP32-S3 avec la carte STM32-LORAWAN en liaison série (UART)" width="500"><br>
   <em>Photo 4</em>
 </p>
