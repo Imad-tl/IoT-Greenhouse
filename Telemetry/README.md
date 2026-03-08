@@ -212,53 +212,68 @@ ID=2;SEQ=1042;LUM=287;ETAT=SOMBRE
 → Nous avions opté pour cette trame dans notre projet
 
 
-## La carte ESP32-S3 
+## La carte ESP32-S3
 
+Si les nœuds C6 sont les "capteurs distants", l'ESP32-S3 agit comme le "cerveau" ou la passerelle (Gateway) du système. Son rôle est double : agréger les données provenant du réseau local BLE et assurer leur transmission vers l'étage suivant (STM32/LoRaWAN).
 
-Si les nœuds C6 sont les "capteurs distants", l’ESP32-S3 agit comme le "cerveau" ou la passerelle (Gateway) du système. Son rôle est double : agréger les données provenant du réseau local BLE et assurer leur transmission sécurisée vers l'étage suivant (LoRaWAN ou Cloud).
+### 1) Rôle de Central BLE et Agrégation
 
-1) Rôle de Central BLE et Agrégation
-Contrairement aux C6 qui sont des périphériques esclaves, l'S3 fonctionne en mode Central. Il scanne activement l'environnement pour identifier les annonces GreenHouse-C6-X. Une fois la connexion établie, il gère l'abonnement aux notifications pour chaque nœud identifié.
+Contrairement aux C6 qui sont des périphériques esclaves, l'S3 fonctionne en mode Central (GATT Client). Il scanne activement l'environnement pour identifier les annonces `GreenHouse-C6-X`. Une fois la connexion établie, il réalise automatiquement la séquence suivante :
 
-L'agrégation repose sur un mécanisme de parsing multi-sources :
+1. Négociation MTU (configurée à 256 octets) pour accepter des payloads chiffrées plus larges.
+2. Découverte du service GATT `0x00FF`.
+3. Découverte de la caractéristique `0xFF01`.
+4. Activation des notifications via l'écriture du CCCD (`0x0100`).
 
-Le S3 reçoit des trames hétérogènes (ID=1, ID=2, ID=3).
+L'agrégation repose sur un tableau de structures `node_data_t` (3 entrées, une par capteur). À chaque notification reçue, le champ `ID=` de la trame déchiffrée permet d'identifier la source et de mettre à jour l'entrée correspondante.
 
-Il décode ces trames pour extraire les valeurs (Température, Luminosité, Mouvement) et les stocke dans une structure de données centralisée.
+### 2) Déchiffrement AES-128-CBC
 
-Cela permet d'avoir, à tout instant, une "image" complète de l'état de la serre sur un seul processeur.
+Les payloads reçues en BLE sont chiffrées côté C6 avec AES-128-CBC. La fonction `decrypt_and_process()` prend en charge le déchiffrement :
 
-2) Sécurité et Déchiffrement AES-128
-Conformément aux exigences de confidentialité du projet, l'S3 assure la couche de sécurité applicative. Les données circulant en BLE ne sont pas en clair ; l'S3 embarque une bibliothèque cryptographique (mbedtls) pour traiter les messages :
+- Les 16 premiers octets de la payload constituent le **vecteur d'initialisation (IV)**.
+- Les octets suivants constituent le **ciphertext**, déchiffré avec la PSK (Pre-Shared Key de 128 bits) via `mbedtls`.
+- Le **padding PKCS7** est ensuite retiré pour obtenir le texte clair.
 
-Déchiffrement AES-CBC : Chaque payload reçue est déchiffrée à l'aide d'une clé PSK (Pre-Shared Key) de 128 bits partagée avec les nœuds.
+Un mécanisme de fallback est prévu : si la payload fait moins de 32 octets, elle est traitée comme du texte clair (utile pour les tests).
+```c
+// Exemple de payload déchiffrée :
+// "ID=1;SEQ=42;T=22.5;H=55"
+```
 
-Vérification d'intégrité : Le S3 contrôle le vecteur d'initialisation (IV) et le padding des messages pour s'assurer que la donnée n'a pas été altérée ou mal transmise.
+> Si le padding est invalide ou si `mbedtls` retourne une erreur, un log `ESP_LOGE` est généré et la trame est rejetée. Cela constitue la validation d'intégrité de base.
 
-3) Intelligence locale et Priorisation (QoS)
-L'S3 ne se contente pas de transmettre ; il analyse la donnée pour optimiser la remontée vers le Cloud :
+### 3) Priorisation et trame de sortie
 
-Filtrage et Priorité : Une donnée critique, comme une détection de mouvement (MOTION=1), est immédiatement marquée avec une priorité haute ('H' pour High). Une mesure de température classique est marquée en priorité normale ('N' pour Normal).
+Lors des versions intermédiaires du code, l'S3 construisait une trame de sortie structurée avant de la transmettre au STM32 via UART :
+```text
+S1;SEQ=<n>;PRIO=<H|N>;TYPE=TEL;T=<val>;H=<val>;LUM=<val>;MOT=<0|1>
+```
 
-Gestion du numéro de séquence : Pour garantir la fiabilité vers la suite de la chaîne (STM32/LoRa), l'S3 incrémente un numéro de séquence (SEQ) dans ses propres trames de sortie. Cela permet de détecter d'éventuelles pertes de paquets entre la passerelle et le module radio.
+- `PRIO=H` (High) est attribué si `MOTION=1` — détection d'intrusion → remontée prioritaire.
+- `PRIO=N` (Normal) pour la télémétrie standard (température, humidité, luminosité).
+- `SEQ` est un compteur monotone incrémenté à chaque envoi confirmé, ce qui permet au STM32 de détecter d'éventuelles pertes de trames.
 
-4) Interface de Diagnostic (Monitor)
-Pour faciliter la maintenance, l'S3 intègre une tâche de monitoring (monitor_task). Toutes les 10 secondes, il affiche sur la console série un résumé complet :
+### 4) Liaison UART vers le STM32/LoRa
 
-État de connexion des différents nœuds.
+La communication vers le STM32 se fait sur `UART_NUM_1` avec les broches `GPIO43 (TX)` et `GPIO44 (RX)` à 115200 bauds. Un mécanisme d'acquittement a été mis en place : après envoi d'une trame, l'S3 attend une réponse de la forme `ACK;SEQ=<n>` pendant 2 secondes (timeout). Si l'ACK est validé, le compteur de séquence est incrémenté. Sinon, un log d'erreur est généré.
+```c
+// Exemple d'échange UART :
+// S3 → STM32 : "S1;SEQ=5;PRIO=N;TYPE=TEL;T=22.5;H=55;LUM=SOMBRE;MOT=0\n"
+// STM32 → S3 : "ACK;SEQ=5"
+```
 
-Dernières valeurs reçues par capteur.
+### 5) Tâche de monitoring
 
-Statistiques de réception (succès de déchiffrement, erreurs éventuelles).
+Une tâche FreeRTOS `monitor_task` tourne en arrière-plan et affiche sur la console série, toutes les 10 secondes, un résumé de l'état de chaque nœud :
+```
+--- RÉSUMÉ CAPTEURS ---
+Node 1: ID=1;SEQ=42;T=22.5;H=55
+Node 2: ID=2;SEQ=17;LUM=287;ETAT=SOMBRE
+Node 3: ---
+```
 
-
-
-
-
-
-
-
-
+Cela permet de diagnostiquer rapidement une absence de données (nœud non connecté, perte BLE) sans avoir à analyser les logs en continu.
 
 # Montages à suivre pour avoir la chaine IoT complète 
 
