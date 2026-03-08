@@ -1,4 +1,4 @@
-# Arduino Mega — Frontend capteurs (Serre connectée)
+# Arduino Mega (Frontend capteurs)
 
 Ce dossier contient le firmware **Arduino Mega 2560** utilisé comme **frontend capteurs** dans le projet “Greenhouse”.
 Le rôle du Mega est de :
