@@ -214,3 +214,45 @@ ID=2;SEQ=1042;LUM=287;ETAT=SOMBRE
 
 ## La carte ESP32-S3 
 
+
+à remplir par AISSATOU 
+
+
+
+
+
+
+
+
+
+
+# Montages à suivre pour avoir la chaine IoT complète 
+
+## Montage de la carte ARDUINO MEGA avec une carte ESP32-C6 (UART)
+
+<table>
+  <tr>
+    <td align="center">
+      <img src="./arduino_espc6.jpg" alt="Montage ARDUINO MEGA avec ESP32-C6 - photo 1" width="400"><br>
+      <em>Photo 1</em>
+    </td>
+    <td align="center">
+      <img src="./arduino_espc6_2.jpg" alt="Montage ARDUINO MEGA avec ESP32-C6 - photo 2" width="400"><br>
+      <em>Photo 2</em>
+    </td>
+  </tr>
+</table>
+
+## Montage des 3 cartes ESP32-C6 avec les 3 capteurs et les ponts diviseurs de tension
+
+<p align="center">
+  <img src="./espc6_capteurs.jpg" alt="Montage des 3 cartes ESP32-C6 avec les capteurs et les ponts diviseurs de tension" width="500"><br>
+  <em>Photo 3</em>
+</p>
+
+## Montage de la carte ESP32-S3 avec la carte STM32-LORAWAN en liaison série (UART)
+
+<p align="center">
+  <img src="./espS3.jpg" alt="Montage de la carte ESP32-S3 avec la carte STM32-LORAWAN en liaison série (UART)" width="500"><br>
+  <em>Photo 4</em>
+</p>
