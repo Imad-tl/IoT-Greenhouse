@@ -215,7 +215,41 @@ ID=2;SEQ=1042;LUM=287;ETAT=SOMBRE
 ## La carte ESP32-S3 
 
 
-à remplir par AISSATOU 
+Si les nœuds C6 sont les "capteurs distants", l’ESP32-S3 agit comme le "cerveau" ou la passerelle (Gateway) du système. Son rôle est double : agréger les données provenant du réseau local BLE et assurer leur transmission sécurisée vers l'étage suivant (LoRaWAN ou Cloud).
+
+1) Rôle de Central BLE et Agrégation
+Contrairement aux C6 qui sont des périphériques esclaves, l'S3 fonctionne en mode Central. Il scanne activement l'environnement pour identifier les annonces GreenHouse-C6-X. Une fois la connexion établie, il gère l'abonnement aux notifications pour chaque nœud identifié.
+
+L'agrégation repose sur un mécanisme de parsing multi-sources :
+
+Le S3 reçoit des trames hétérogènes (ID=1, ID=2, ID=3).
+
+Il décode ces trames pour extraire les valeurs (Température, Luminosité, Mouvement) et les stocke dans une structure de données centralisée.
+
+Cela permet d'avoir, à tout instant, une "image" complète de l'état de la serre sur un seul processeur.
+
+2) Sécurité et Déchiffrement AES-128
+Conformément aux exigences de confidentialité du projet, l'S3 assure la couche de sécurité applicative. Les données circulant en BLE ne sont pas en clair ; l'S3 embarque une bibliothèque cryptographique (mbedtls) pour traiter les messages :
+
+Déchiffrement AES-CBC : Chaque payload reçue est déchiffrée à l'aide d'une clé PSK (Pre-Shared Key) de 128 bits partagée avec les nœuds.
+
+Vérification d'intégrité : Le S3 contrôle le vecteur d'initialisation (IV) et le padding des messages pour s'assurer que la donnée n'a pas été altérée ou mal transmise.
+
+3) Intelligence locale et Priorisation (QoS)
+L'S3 ne se contente pas de transmettre ; il analyse la donnée pour optimiser la remontée vers le Cloud :
+
+Filtrage et Priorité : Une donnée critique, comme une détection de mouvement (MOTION=1), est immédiatement marquée avec une priorité haute ('H' pour High). Une mesure de température classique est marquée en priorité normale ('N' pour Normal).
+
+Gestion du numéro de séquence : Pour garantir la fiabilité vers la suite de la chaîne (STM32/LoRa), l'S3 incrémente un numéro de séquence (SEQ) dans ses propres trames de sortie. Cela permet de détecter d'éventuelles pertes de paquets entre la passerelle et le module radio.
+
+4) Interface de Diagnostic (Monitor)
+Pour faciliter la maintenance, l'S3 intègre une tâche de monitoring (monitor_task). Toutes les 10 secondes, il affiche sur la console série un résumé complet :
+
+État de connexion des différents nœuds.
+
+Dernières valeurs reçues par capteur.
+
+Statistiques de réception (succès de déchiffrement, erreurs éventuelles).
 
 
 
