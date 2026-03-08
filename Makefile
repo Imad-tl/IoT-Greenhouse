@@ -1,3 +1,2 @@
 include make/cloud.mk
-include make/lorawan.mk
-include make/ttn.mk
+include make/telemetry.mk
