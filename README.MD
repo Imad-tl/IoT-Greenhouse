@@ -6,6 +6,8 @@ L’architecture adoptée est une architecture multi-nœuds : chaque capteur est
 
 Enfin, la chaîne est conçue pour aller au-delà du réseau local : la passerelle transmet les données vers un module STM32 LoRaWAN (uplink), qui assure ensuite la remontée vers le cloud (via un réseau LoRaWAN), afin de reproduire un parcours complet “terrain → passerelle → réseau longue portée → cloud”.
 
+![Montage général du système](./Telemetry/images/montage_general_systeme.png)
+
 ---
 
 ## Prérequis environnement d'exécution 
