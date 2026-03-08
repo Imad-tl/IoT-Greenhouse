@@ -171,3 +171,160 @@ make cloud-daemon
 # 6. (Optionnel) Peupler avec des données de test
 make cloud-seed
 ``` 
+
+# Déploiement — STM32 LoRaWAN Bridge
+
+## Prérequis matériel
+
+- Carte **STM32 B-L072Z-LRWAN1**
+- Carte **ESP32-S3**
+- Câble USB micro-B (ST-Link, pour flasher et débugger la STM32)
+- 3 fils de liaison (UART + GND)
+- Accès à un compte **The Things Network (TTN)** avec une gateway LoRaWAN à portée
+
+---
+
+## 1. Câblage physique ESP32 ↔ STM32
+
+Relier les deux cartes avec 3 fils avant de démarrer :
+
+| STM32 | ESP32-S3 |
+|-------|----------|
+| PA_9 (RX) | TX |
+| PA_10 (TX) | RX |
+| GND | GND |
+
+> Ne pas croiser GND. Les deux cartes doivent partager la même masse.
+
+---
+
+## 2. Configuration TTN
+
+### 2.1 Créer l'application
+
+1. Se connecter sur [console.thethingsnetwork.org](https://console.thethingsnetwork.org)
+2. Aller dans **Applications** → **+ Create application**
+3. Renseigner un **Application ID** et valider
+
+### 2.2 Enregistrer le device
+
+1. Dans l'application, aller dans **End devices** → **+ Register end device**
+2. Choisir **Enter end device specifics manually**
+3. Renseigner :
+   - **Frequency plan** : `Europe 863-870 MHz (SF9 for RX2)`
+   - **LoRaWAN version** : `LoRaWAN Specification 1.0.2`
+4. Générer ou saisir les identifiants :
+   - **DevEUI** — identifiant unique de la carte
+   - **AppEUI** — peut rester à zéro (`0000000000000000`)
+   - **AppKey** — clé de chiffrement, à garder secrète
+5. Valider avec **Register end device**
+
+### 2.3 Activer "Resets join nonces"
+
+Pour éviter l'erreur `DevNonce is too small` lors des redémarrages de la carte en développement :
+
+1. Dans les réglages du device → **General settings**
+2. **Network layer** → **Advanced MAC settings**
+3. Cocher **Resets join nonces** 
+4. Sauvegarder
+
+---
+
+## 3. Installation de Keil Studio Cloud
+
+Keil Studio Cloud est un IDE en ligne, aucune installation lourde n'est requise.
+
+1. Se rendre sur [studio.keil.arm.com](https://studio.keil.arm.com)
+2. Se connecter avec un compte **Arm** (création gratuite)
+3. Dans le menu de gauche, cliquer sur **CMSIS** puis **Import project**
+4. Importer le dépôt du projet (URL Git ou archive zip)
+5. Une fois importé, sélectionner la cible **DISCO_L072CZ_LRWAN1** dans la barre en haut
+
+### Sur Linux
+
+Le navigateur Chrome ou Edge est recommandé. Le driver ST-Link est nécessaire pour flasher :
+
+```bash
+# Ubuntu/Debian
+sudo apt install libusb-1.0-0
+```
+
+Ajouter une règle udev pour accéder à la carte sans sudo :
+
+```bash
+echo 'SUBSYSTEM=="usb", ATTR{idVendor}=="0483", MODE="0666"' | sudo tee /etc/udev/rules.d/99-stlink.rules
+sudo udevadm control --reload-rules
+```
+
+### Sur Windows
+
+Installer le driver **ST-Link** depuis le site ST si ce n'est pas déjà fait :
+[st.com/stm32cubeide](https://www.st.com/en/development-tools/stsw-link009.html)
+
+---
+
+## 4. Configuration des clés dans le projet
+
+Ouvrir le fichier `mbed_app.json` et renseigner les clés récupérées sur TTN à l'étape 2.2 :
+
+```json
+"lora.device-eui":      "{ 0xXX, 0xXX, 0xXX, 0xXX, 0xXX, 0xXX, 0xXX, 0xXX }",
+"lora.application-eui": "{ 0xXX, 0xXX, 0xXX, 0xXX, 0xXX, 0xXX, 0xXX, 0xXX }",
+"lora.application-key": "{ 0xXX, 0xXX, 0xXX, 0xXX, 0xXX, 0xXX, 0xXX, 0xXX, 0xXX, 0xXX, 0xXX, 0xXX, 0xXX, 0xXX, 0xXX, 0xXX }"
+```
+
+> Les valeurs sont en **little-endian** : copier le DevEUI affiché sur TTN en inversant l'ordre des octets.
+
+---
+
+## 5. Compilation et flash
+
+1. Dans Keil Studio Cloud, cliquer sur **Build** (icône marteau) pour compiler
+2. Une fois la compilation terminée, brancher la STM32 en USB
+3. Cliquer sur **Run** pour flasher automatiquement la carte
+
+La carte redémarre automatiquement après le flash.
+
+---
+
+## 6. Vérification du bon fonctionnement
+
+### Port série (debug)
+
+Ouvrir un terminal série sur le port ST-Link à **115200 baud** :
+
+- **Windows** : PuTTY ou Tera Term sur le port COM correspondant
+- **Linux** : `minicom -D /dev/ttyACM0 -b 115200` ou `screen /dev/ttyACM0 115200`
+
+La sortie attendue au démarrage :
+
+```
+=== STM32 LoRaWAN Bridge ESP32 -> TTN ===
+[LORA] Stack initialisée
+[LORA] ADR activé, JOIN en cours...
+[LORA] Connecté ! En attente de données ESP32...
+```
+
+Une fois des données reçues de l'ESP32 :
+
+```
+[UART] 23 octets reçus, envoi LoRa...
+[LORA] 23 octets planifiés
+[LORA] Trame envoyée avec succès
+```
+
+### Côté TTN
+
+Les trames doivent apparaître dans **Live data** sur la page du device dans la console TTN, avec le type **Uplink**.
+
+---
+
+## Dépannage
+
+| Symptôme | Cause probable | Solution |
+|----------|---------------|----------|
+| `JOIN_FAILURE` au démarrage | Clés incorrectes | Vérifier DevEUI, AppEUI, AppKey dans `mbed_app.json` |
+| `DevNonce is too small` | Reset de la carte | Activer "Resets join nonces" sur TTN (étape 2.3) |
+| Aucune donnée reçue de l'ESP32 | Câblage incorrect | Vérifier PA_9/PA_10 et le GND commun |
+| `Duty-cycle : réessai dans 3s` | Limite EU868 atteinte | Normal, la carte réessaie automatiquement |
+| Carte non détectée sur Linux | Driver udev manquant | Appliquer la règle udev (étape 3) |
